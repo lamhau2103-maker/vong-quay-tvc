@@ -3,7 +3,6 @@ import {
   AlertCircle,
   Award,
   Send,
-  ArrowLeft,
   User,
   BookOpen
 } from 'lucide-react';
@@ -17,8 +16,6 @@ import {
 interface ChallengePageProps {
   settings: AppSettings;
   onSubmitSuccess: (submission: StudentSubmission) => void;
-  onBackToWheel?: () => void;
-  isEmbeddedPreview?: boolean;
 }
 
 const DEPARTMENT_SUGGESTIONS = [
@@ -50,8 +47,7 @@ const OPTION_LABELS = ['A', 'B', 'C', 'D'];
 
 export default function ChallengePage({
   settings,
-  onSubmitSuccess,
-  onBackToWheel
+  onSubmitSuccess
 }: ChallengePageProps) {
   const questions =
     Array.isArray(settings.questions) && settings.questions.length === 10
@@ -60,9 +56,13 @@ export default function ChallengePage({
 
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
-  const [school, setSchool] = useState(
-    settings.schoolName?.trim() || 'Đại học Nông Lâm TP.HCM'
-  );
+  const [school, setSchool] = useState(() => {
+    if (typeof window !== 'undefined') {
+      const urlSchool = new URLSearchParams(window.location.search).get('school')?.trim();
+      if (urlSchool) return urlSchool;
+    }
+    return settings.schoolName?.trim() || 'Đại học Nông Lâm TP.HCM';
+  });
   const [isSchoolManuallyEdited, setIsSchoolManuallyEdited] = useState(false);
   const [department, setDepartment] = useState('');
   const [year, setYear] = useState('');
@@ -212,30 +212,17 @@ export default function ChallengePage({
   return (
     <div className="min-h-screen bg-white text-slate-900 pb-14">
       <main className="max-w-3xl mx-auto px-4 pt-6">
-        <div className="mb-5 flex items-center justify-between gap-3">
-          <div>
-            <h1 className="font-display font-black text-xl sm:text-2xl text-blue-700 tracking-tight uppercase">
-              THỬ THÁCH NHẬN QUÀ
-            </h1>
-            <p className="text-xs text-slate-600 mt-0.5">
-              Điền đầy đủ thông tin sinh viên và hoàn thành 10 câu hỏi trắc nghiệm bên dưới
-            </p>
-          </div>
-
-          {onBackToWheel && (
-            <button
-              type="button"
-              onClick={onBackToWheel}
-              className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl border border-blue-200 bg-white hover:bg-blue-50 text-xs font-semibold text-blue-700 transition cursor-pointer shrink-0 shadow-xs"
-            >
-              <ArrowLeft className="w-4 h-4 text-blue-600" />
-              <span>Về Vòng Quay</span>
-            </button>
-          )}
+        <div className="mb-5">
+          <h1 className="font-display font-black text-xl sm:text-2xl text-blue-700 tracking-tight uppercase">
+            THỬ THÁCH NHẬN QUÀ
+          </h1>
+          <p className="text-xs text-slate-600 mt-0.5">
+            Điền đầy đủ thông tin sinh viên và hoàn thành 10 câu hỏi trắc nghiệm bên dưới
+          </p>
         </div>
 
         {submittedResult ? (
-          /* MÀN HÌNH KẾT QUẢ CHẤM ĐIỂM TỰ ĐỘNG (KHÔNG HIỂN THỊ ĐÁP ÁN ĐÚNG, KHÔNG CÓ NÚT LÀM LƯỢT MỚI) */
+          /* MÀN HÌNH KẾT QUẢ CHẤM ĐIỂM TỰ ĐỘNG (KHÔNG HIỂN THỊ ĐÁP ÁN ĐÚNG, KHÔNG CÓ NÚT LÀM LƯỢT MỚI & KHÔNG CÓ NÚT CHUYỂN TRANG) */
           <div className="bg-white border-2 border-blue-500 rounded-3xl p-6 sm:p-8 shadow-xl text-center space-y-6">
             <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-blue-500 via-blue-600 to-indigo-600 text-white flex items-center justify-center mx-auto shadow-md">
               <Award className="w-9 h-9" />
@@ -279,18 +266,6 @@ export default function ChallengePage({
               <strong>Vòng Quay Chiếc Nón Kỳ Diệu</strong>. Hãy đến khu vực vòng quay để bấm{' '}
               <strong>QUAY NGAY</strong> nhận quà!
             </div>
-
-            {onBackToWheel && (
-              <div className="pt-2">
-                <button
-                  type="button"
-                  onClick={onBackToWheel}
-                  className="w-full py-3.5 px-5 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-display font-extrabold text-sm transition cursor-pointer shadow-md"
-                >
-                  Chuyển Đến Trang Vòng Quay Ngay
-                </button>
-              </div>
-            )}
           </div>
         ) : (
           /* BIỂU MẪU NHẬP LIỆU SINH VIÊN + 10 CÂU HỎI TRẮC NGHIỆM (TONE XANH DƯƠNG) */

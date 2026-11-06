@@ -478,6 +478,26 @@ export default function App() {
         } catch {
           // Ignore
         }
+      } else if (e.key === STORAGE_KEY_SETTINGS && e.newValue && !isAdminUnlockedRef.current) {
+        try {
+          const parsed = JSON.parse(e.newValue);
+          if (parsed && typeof parsed === 'object') {
+            setSettings((prev) => ({
+              ...prev,
+              ...parsed,
+              prizeItems:
+                Array.isArray(parsed.prizeItems) && parsed.prizeItems.length > 0
+                  ? parsed.prizeItems
+                  : prev.prizeItems,
+              questions:
+                Array.isArray(parsed.questions) && parsed.questions.length === 10
+                  ? parsed.questions
+                  : prev.questions
+            }));
+          }
+        } catch {
+          // Ignore
+        }
       }
     };
     window.addEventListener('storage', handleStorageChange);
@@ -1339,14 +1359,6 @@ export default function App() {
         onSubmitSuccess={(newSub) => {
           setSubmissions((prev) => mergeSubmissionsList(prev, [newSub]));
           setSelectedSubmissionId(newSub.id);
-        }}
-        onBackToWheel={() => {
-          const url = new URL(window.location.href);
-          url.searchParams.delete('mode');
-          window.history.pushState({}, '', url.toString());
-          setIsChallengeView(false);
-          setActiveMainTab('wheel');
-          handleRefreshSubmissions(false);
         }}
       />
     );
