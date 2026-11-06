@@ -1391,15 +1391,6 @@ export default function App() {
           setSubmissions((prev) => mergeSubmissionsList(prev, [newSub]));
           setSelectedSubmissionId(newSub.id);
         }}
-        onBackToWheel={() => {
-          const url = new URL(window.location.href);
-          url.searchParams.delete('mode');
-          url.searchParams.delete('school');
-          window.history.pushState({}, '', url.toString());
-          setIsChallengeView(false);
-          setActiveMainTab('wheel');
-          handleRefreshSubmissions(false);
-        }}
       />
     );
   }
