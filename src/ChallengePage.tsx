@@ -4,7 +4,6 @@ import {
   Award,
   Send,
   ArrowLeft,
-  RotateCcw,
   User,
   BookOpen
 } from 'lucide-react';
@@ -190,22 +189,12 @@ export default function ChallengePage({
     }
   };
 
-  const handleResetForm = () => {
-    setSubmittedResult(null);
-    setName('');
-    setPhone('');
-    setDepartment('');
-    setYear('');
-    setAnswers({});
-    setErrorMsg(null);
-  };
-
   return (
     <div className="min-h-screen bg-white text-slate-900 pb-14">
       <main className="max-w-3xl mx-auto px-4 pt-6">
         <div className="mb-5 flex items-center justify-between gap-3">
           <div>
-            <h1 className="font-display font-black text-xl sm:text-2xl text-amber-600 tracking-tight uppercase">
+            <h1 className="font-display font-black text-xl sm:text-2xl text-blue-700 tracking-tight uppercase">
               THỬ THÁCH NHẬN QUÀ
             </h1>
             <p className="text-xs text-slate-600 mt-0.5">
@@ -217,23 +206,23 @@ export default function ChallengePage({
             <button
               type="button"
               onClick={onBackToWheel}
-              className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl border border-slate-300 bg-white hover:bg-slate-50 text-xs font-semibold text-slate-700 transition cursor-pointer shrink-0 shadow-xs"
+              className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl border border-blue-200 bg-white hover:bg-blue-50 text-xs font-semibold text-blue-700 transition cursor-pointer shrink-0 shadow-xs"
             >
-              <ArrowLeft className="w-4 h-4 text-amber-600" />
+              <ArrowLeft className="w-4 h-4 text-blue-600" />
               <span>Về Vòng Quay</span>
             </button>
           )}
         </div>
 
         {submittedResult ? (
-          /* MÀN HÌNH KẾT QUẢ CHẤM ĐIỂM TỰ ĐỘNG */
-          <div className="bg-white border-2 border-amber-400 rounded-3xl p-6 sm:p-8 shadow-xl text-center space-y-6">
-            <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-amber-400 via-amber-500 to-orange-500 text-white flex items-center justify-center mx-auto shadow-md">
+          /* MÀN HÌNH KẾT QUẢ CHẤM ĐIỂM TỰ ĐỘNG (KHÔNG HIỂN THỊ ĐÁP ÁN ĐÚNG, KHÔNG CÓ NÚT LÀM LƯỢT MỚI) */
+          <div className="bg-white border-2 border-blue-500 rounded-3xl p-6 sm:p-8 shadow-xl text-center space-y-6">
+            <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-blue-500 via-blue-600 to-indigo-600 text-white flex items-center justify-center mx-auto shadow-md">
               <Award className="w-9 h-9" />
             </div>
 
             <div>
-              <div className="text-xs font-bold uppercase tracking-widest text-emerald-600">
+              <div className="text-xs font-bold uppercase tracking-widest text-blue-600">
                 ✓ Đã nộp bài &amp; chấm điểm thành công
               </div>
               <h2 className="font-display font-black text-2xl sm:text-3xl text-slate-900 mt-1">
@@ -241,7 +230,7 @@ export default function ChallengePage({
               </h2>
               <p className="text-xs sm:text-sm text-slate-600 mt-1">
                 {submittedResult.school} · Khoa{' '}
-                <strong className="text-amber-600">{submittedResult.department}</strong> ·{' '}
+                <strong className="text-blue-700">{submittedResult.department}</strong> ·{' '}
                 {submittedResult.year}
               </p>
               <p className="text-xs font-mono tabular-nums text-slate-500 mt-0.5">
@@ -250,108 +239,57 @@ export default function ChallengePage({
             </div>
 
             {/* Khung Điểm Số */}
-            <div className="py-5 px-6 rounded-2xl bg-amber-50/70 border border-amber-300 max-w-md mx-auto">
-              <div className="text-xs text-slate-600 uppercase tracking-wider font-semibold">
+            <div className="py-5 px-6 rounded-2xl bg-blue-50/80 border border-blue-300 max-w-md mx-auto">
+              <div className="text-xs text-blue-800 uppercase tracking-wider font-semibold">
                 Kết quả bài trắc nghiệm của bạn
               </div>
-              <div className="font-display font-black text-4xl sm:text-5xl text-amber-600 my-2 tabular-nums">
+              <div className="font-display font-black text-4xl sm:text-5xl text-blue-600 my-2 tabular-nums">
                 {submittedResult.score} / {submittedResult.totalQuestions}
               </div>
               <div className="text-xs font-medium text-slate-600">
-                Trả lời đúng <strong className="text-slate-900">{submittedResult.score}</strong>{' '}
+                Trả lời đúng <strong className="text-blue-900">{submittedResult.score}</strong>{' '}
                 trên tổng số{' '}
-                <strong className="text-slate-900">{submittedResult.totalQuestions}</strong> câu hỏi
+                <strong className="text-blue-900">{submittedResult.totalQuestions}</strong> câu hỏi
               </div>
             </div>
 
-            <div className="p-4 rounded-2xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs sm:text-sm leading-relaxed">
+            <div className="p-4 rounded-2xl bg-blue-50 border border-blue-200 text-blue-900 text-xs sm:text-sm leading-relaxed">
               Thông tin và điểm số của bạn đã được chuyển tới{' '}
               <strong>Vòng Quay Chiếc Nón Kỳ Diệu</strong> tại gian hàng. Hãy đến khu vực vòng
               quay để bấm <strong>QUAY NGAY</strong> nhận quà!
             </div>
 
-            {/* Chi tiết đáp án */}
-            <div className="text-left space-y-2.5 pt-2 border-t border-slate-200">
-              <h3 className="text-xs font-bold uppercase tracking-wider text-slate-500">
-                Chi tiết kết quả 10 câu hỏi:
-              </h3>
-              <div className="space-y-2 max-h-72 overflow-y-auto pr-1">
-                {questions.map((q, idx) => {
-                  const userAns = submittedResult.answers[idx];
-                  const isCorrect = userAns === q.correctIndex;
-                  return (
-                    <div
-                      key={q.id}
-                      className={`p-3 rounded-xl border text-xs ${
-                        isCorrect
-                          ? 'bg-emerald-50/70 border-emerald-200 text-slate-800'
-                          : 'bg-red-50/70 border-red-200 text-slate-800'
-                      }`}
-                    >
-                      <div className="font-semibold text-slate-900">
-                        Câu {idx + 1}: {q.question}
-                      </div>
-                      <div className="mt-1 flex flex-wrap items-center gap-x-4 gap-y-1 text-[11px]">
-                        <span>
-                          Bạn chọn:{' '}
-                          <strong className={isCorrect ? 'text-emerald-700' : 'text-red-600'}>
-                            {OPTION_LABELS[userAns]}. {q.options[userAns]}
-                          </strong>
-                        </span>
-                        {!isCorrect && (
-                          <span className="text-amber-700">
-                            Đáp án đúng:{' '}
-                            <strong>
-                              {OPTION_LABELS[q.correctIndex]}. {q.options[q.correctIndex]}
-                            </strong>
-                          </span>
-                        )}
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-
-            <div className="flex flex-col sm:flex-row gap-3 pt-2">
-              {onBackToWheel && (
+            {onBackToWheel && (
+              <div className="pt-2">
                 <button
                   type="button"
                   onClick={onBackToWheel}
-                  className="flex-1 py-3.5 px-5 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-white font-display font-extrabold text-sm transition cursor-pointer shadow-md"
+                  className="w-full py-3.5 px-5 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-display font-extrabold text-sm transition cursor-pointer shadow-md"
                 >
                   Đến Vòng Quay Nhận Quà Ngay
                 </button>
-              )}
-              <button
-                type="button"
-                onClick={handleResetForm}
-                className="inline-flex items-center justify-center gap-2 py-3.5 px-5 rounded-xl border border-slate-300 bg-white hover:bg-slate-50 text-slate-700 font-semibold text-xs sm:text-sm transition cursor-pointer"
-              >
-                <RotateCcw className="w-4 h-4" />
-                <span>Làm lượt mới</span>
-              </button>
-            </div>
+              </div>
+            )}
           </div>
         ) : (
-          /* BIỂU MẪU NHẬP LIỆU SINH VIÊN + 10 CÂU HỎI TRẮC NGHIỆM */
+          /* BIỂU MẪU NHẬP LIỆU SINH VIÊN + 10 CÂU HỎI TRẮC NGHIỆM (TONE XANH DƯƠNG) */
           <form onSubmit={handleSubmitChallenge} className="space-y-6" noValidate>
             {/* KHỐI 1: THÔNG TIN CÁ NHÂN SINH VIÊN */}
-            <section className="bg-white border border-slate-200 rounded-2xl p-5 sm:p-6 shadow-sm space-y-4">
-              <div className="flex items-center justify-between pb-3 border-b border-slate-200">
+            <section className="bg-white border border-blue-100 rounded-2xl p-5 sm:p-6 shadow-sm space-y-4">
+              <div className="flex items-center justify-between pb-3 border-b border-blue-100">
                 <div className="flex items-center gap-2">
-                  <User className="w-5 h-5 text-amber-600" />
-                  <h2 className="font-display font-bold text-base sm:text-lg text-slate-900">
+                  <User className="w-5 h-5 text-blue-600" />
+                  <h2 className="font-display font-bold text-base sm:text-lg text-blue-900">
                     Phần 1: Thông Tin Sinh Viên
                   </h2>
                 </div>
-                <span className="text-xs font-semibold text-red-600">Bắt buộc *</span>
+                <span className="text-xs font-semibold text-blue-600">Bắt buộc *</span>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 {/* 1. Họ và Tên */}
                 <div className="sm:col-span-1">
-                  <label className="block text-xs font-semibold text-slate-700 mb-1.5">
+                  <label className="block text-xs font-semibold text-blue-900 mb-1.5">
                     1. Họ và Tên <span className="text-red-500">*</span>
                   </label>
                   <input
@@ -359,13 +297,13 @@ export default function ChallengePage({
                     value={name}
                     onChange={(e) => setName(e.target.value)}
                     placeholder="Ví dụ: Nguyễn Văn A"
-                    className="w-full px-3.5 py-2.5 rounded-xl bg-white border border-slate-300 text-slate-900 placeholder-slate-400 text-sm focus:outline-none focus:border-amber-500 transition"
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-white border border-slate-300 text-slate-900 placeholder-slate-400 text-sm focus:outline-none focus:border-blue-600 transition"
                   />
                 </div>
 
                 {/* 2. Số Điện Thoại */}
                 <div className="sm:col-span-1">
-                  <label className="block text-xs font-semibold text-slate-700 mb-1.5">
+                  <label className="block text-xs font-semibold text-blue-900 mb-1.5">
                     2. Số Điện Thoại <span className="text-red-500">*</span>
                   </label>
                   <input
@@ -373,13 +311,13 @@ export default function ChallengePage({
                     value={phone}
                     onChange={(e) => setPhone(e.target.value)}
                     placeholder="Ví dụ: 0901234567"
-                    className="w-full px-3.5 py-2.5 rounded-xl bg-white border border-slate-300 text-slate-900 placeholder-slate-400 text-sm font-mono tabular-nums focus:outline-none focus:border-amber-500 transition"
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-white border border-slate-300 text-slate-900 placeholder-slate-400 text-sm font-mono tabular-nums focus:outline-none focus:border-blue-600 transition"
                   />
                 </div>
 
                 {/* 3. Tên Trường */}
                 <div className="sm:col-span-2">
-                  <label className="block text-xs font-semibold text-slate-700 mb-1.5">
+                  <label className="block text-xs font-semibold text-blue-900 mb-1.5">
                     3. Tên Trường <span className="text-red-500">*</span>
                   </label>
                   <input
@@ -387,13 +325,13 @@ export default function ChallengePage({
                     value={school}
                     onChange={(e) => setSchool(e.target.value)}
                     placeholder="Ví dụ: Đại học Nông Lâm TP.HCM"
-                    className="w-full px-3.5 py-2.5 rounded-xl bg-white border border-slate-300 text-slate-900 placeholder-slate-400 text-sm focus:outline-none focus:border-amber-500 transition"
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-white border border-slate-300 text-slate-900 placeholder-slate-400 text-sm focus:outline-none focus:border-blue-600 transition"
                   />
                 </div>
 
                 {/* 4. Khoa Học */}
                 <div className="sm:col-span-1">
-                  <label className="block text-xs font-semibold text-slate-700 mb-1.5">
+                  <label className="block text-xs font-semibold text-blue-900 mb-1.5">
                     4. Khoa Học <span className="text-red-500">*</span>
                   </label>
                   <input
@@ -402,7 +340,7 @@ export default function ChallengePage({
                     value={department}
                     onChange={(e) => setDepartment(e.target.value)}
                     placeholder="VD: Chăn nuôi thú y, CNTT..."
-                    className="w-full px-3.5 py-2.5 rounded-xl bg-white border border-slate-300 text-slate-900 placeholder-slate-400 text-sm focus:outline-none focus:border-amber-500 transition"
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-white border border-slate-300 text-slate-900 placeholder-slate-400 text-sm focus:outline-none focus:border-blue-600 transition"
                   />
                   <datalist id="challengeDeptSuggestions">
                     {DEPARTMENT_SUGGESTIONS.map((d) => (
@@ -413,13 +351,13 @@ export default function ChallengePage({
 
                 {/* 5. Sinh Viên Năm Thứ */}
                 <div className="sm:col-span-1">
-                  <label className="block text-xs font-semibold text-slate-700 mb-1.5">
+                  <label className="block text-xs font-semibold text-blue-900 mb-1.5">
                     5. Sinh Viên Năm Thứ <span className="text-red-500">*</span>
                   </label>
                   <select
                     value={year}
                     onChange={(e) => setYear(e.target.value)}
-                    className="w-full px-3.5 py-2.5 rounded-xl bg-white border border-slate-300 text-slate-900 text-sm focus:outline-none focus:border-amber-500 transition"
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-white border border-slate-300 text-slate-900 text-sm focus:outline-none focus:border-blue-600 transition"
                   >
                     <option value="">-- Chọn năm học --</option>
                     {YEAR_OPTIONS.map((yr) => (
@@ -433,15 +371,15 @@ export default function ChallengePage({
             </section>
 
             {/* KHỐI 2: 10 CÂU HỎI TRẮC NGHIỆM */}
-            <section className="bg-white border border-slate-200 rounded-2xl p-5 sm:p-6 shadow-sm space-y-5">
-              <div className="flex flex-wrap items-center justify-between gap-2 pb-3 border-b border-slate-200 sticky top-0 bg-white/95 backdrop-blur-md z-20 py-2 -mx-2 px-2 rounded-lg">
+            <section className="bg-white border border-blue-100 rounded-2xl p-5 sm:p-6 shadow-sm space-y-5">
+              <div className="flex flex-wrap items-center justify-between gap-2 pb-3 border-b border-blue-100 sticky top-0 bg-white/95 backdrop-blur-md z-20 py-2 -mx-2 px-2 rounded-lg">
                 <div className="flex items-center gap-2">
-                  <BookOpen className="w-5 h-5 text-amber-600" />
-                  <h2 className="font-display font-bold text-base sm:text-lg text-slate-900">
+                  <BookOpen className="w-5 h-5 text-blue-600" />
+                  <h2 className="font-display font-bold text-base sm:text-lg text-blue-900">
                     Phần 2: 10 Câu Hỏi Trắc Nghiệm
                   </h2>
                 </div>
-                <span className="text-xs font-mono tabular-nums font-semibold text-amber-700">
+                <span className="text-xs font-mono tabular-nums font-semibold text-blue-700">
                   Đã trả lời: {answeredCount} / {questions.length} câu
                 </span>
               </div>
@@ -455,15 +393,15 @@ export default function ChallengePage({
                       id={`quiz-question-${qIdx}`}
                       className={`p-4 sm:p-5 rounded-2xl border transition ${
                         selectedOpt !== undefined
-                          ? 'bg-amber-50/40 border-amber-400'
+                          ? 'bg-blue-50/50 border-blue-400'
                           : 'bg-slate-50/70 border-slate-200'
                       }`}
                     >
                       <div className="flex items-start gap-2.5 mb-3.5">
-                        <span className="inline-flex items-center justify-center w-7 h-7 rounded-lg bg-amber-100 border border-amber-300 text-amber-800 font-display font-bold text-xs shrink-0 mt-0.5 tabular-nums">
+                        <span className="inline-flex items-center justify-center w-7 h-7 rounded-lg bg-blue-100 border border-blue-300 text-blue-800 font-display font-bold text-xs shrink-0 mt-0.5 tabular-nums">
                           {qIdx + 1}
                         </span>
-                        <h3 className="text-sm sm:text-base font-semibold text-slate-900 leading-snug">
+                        <h3 className="text-sm sm:text-base font-semibold text-blue-950 leading-snug">
                           {q.question}
                         </h3>
                       </div>
@@ -478,15 +416,15 @@ export default function ChallengePage({
                               onClick={() => handleSelectOption(qIdx, optIdx)}
                               className={`w-full text-left px-3.5 py-3 rounded-xl border text-xs sm:text-sm flex items-start gap-3 transition cursor-pointer ${
                                 isSelected
-                                  ? 'bg-amber-100/90 border-amber-500 text-slate-900 font-semibold shadow-xs'
-                                  : 'bg-white border-slate-200 text-slate-700 hover:border-slate-300 hover:bg-slate-50'
+                                  ? 'bg-blue-100/90 border-blue-600 text-blue-950 font-semibold shadow-xs'
+                                  : 'bg-white border-slate-200 text-slate-700 hover:border-blue-300 hover:bg-blue-50/40'
                               }`}
                             >
                               <span
                                 className={`inline-flex items-center justify-center w-6 h-6 rounded-md text-xs font-bold shrink-0 ${
                                   isSelected
-                                    ? 'bg-amber-500 text-white'
-                                    : 'bg-slate-100 text-slate-600'
+                                    ? 'bg-blue-600 text-white'
+                                    : 'bg-blue-50 text-blue-700'
                                 }`}
                               >
                                 {OPTION_LABELS[optIdx]}
@@ -511,7 +449,7 @@ export default function ChallengePage({
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className="w-full py-4 px-6 rounded-2xl bg-gradient-to-r from-amber-500 via-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-white font-display font-black text-base shadow-lg shadow-amber-500/20 flex items-center justify-center gap-2 transition cursor-pointer"
+                className="w-full py-4 px-6 rounded-2xl bg-gradient-to-r from-blue-600 via-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-display font-black text-base shadow-lg shadow-blue-600/20 flex items-center justify-center gap-2 transition cursor-pointer"
               >
                 <Send className="w-5 h-5" />
                 <span>{isSubmitting ? 'ĐANG CHẤM ĐIỂM...' : 'NỘP BÀI & CHẤM ĐIỂM'}</span>

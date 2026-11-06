@@ -1152,8 +1152,8 @@ export default function App() {
             </div>
           </div>
 
-          {/* Tiêu đề chính căn giữa, tự động cập nhật theo thời gian thực */}
-          <h1 className="font-display font-black text-lg sm:text-2xl lg:text-[24px] text-center tracking-tight leading-snug text-amber-600 max-w-3xl">
+          {/* Tiêu đề chính căn giữa, màu chữ xanh dương, tự động cập nhật theo thời gian thực */}
+          <h1 className="font-display font-black text-lg sm:text-2xl lg:text-[24px] text-center tracking-tight leading-snug text-blue-700 max-w-3xl">
             NGÀY HỘI VIỆC LÀM CÙNG TRƯỜNG {displaySchoolName}
           </h1>
         </div>
@@ -1165,7 +1165,7 @@ export default function App() {
         <div className={activeMainTab === 'wheel' ? 'block' : 'hidden'}>
           <div className="flex flex-col lg:flex-row gap-6 items-start">
             {/* CỘT TRÁI (60%): VÒNG QUAY ĐẶT NGANG HÀNG TRÊN CÙNG VỚI KHUNG HÌNH QR CODE + THÔNG TIN BÀI NỘP & SỐ ĐIỂM PHÍA DƯỚI */}
-            <section className="w-full lg:w-[60%] bg-white border border-slate-200 rounded-2xl p-5 sm:p-6 flex flex-col items-center justify-start shadow-sm relative overflow-hidden">
+            <section className="w-full lg:w-[60%] bg-white border border-blue-100 rounded-2xl p-5 sm:p-6 flex flex-col items-center justify-start shadow-sm relative overflow-hidden">
               {spinWarning && (
                 <div className="w-full mb-3 px-4 py-2.5 rounded-xl bg-red-50 border border-red-200 flex items-center gap-2 text-xs text-red-700 font-medium">
                   <AlertCircle className="w-4 h-4 text-red-600 shrink-0" />
@@ -1235,14 +1235,14 @@ export default function App() {
                   type="button"
                   onClick={handleSpinWheel}
                   disabled={isSpinning}
-                  className={`absolute z-20 w-28 h-28 sm:w-32 sm:h-32 rounded-full p-1.5 bg-gradient-to-b from-yellow-200 via-amber-400 to-amber-600 shadow-lg transition-transform focus:outline-none ${
+                  className={`absolute z-20 w-28 h-28 sm:w-32 sm:h-32 rounded-full p-1.5 bg-gradient-to-b from-blue-200 via-blue-500 to-blue-700 shadow-lg transition-transform focus:outline-none ${
                     isSpinning
                       ? 'scale-95 opacity-90 cursor-wait'
                       : 'hover:scale-105 active:scale-95 cursor-pointer'
                   }`}
                   aria-label="Quay ngay"
                 >
-                  <div className="w-full h-full rounded-full bg-gradient-to-b from-red-600 via-red-700 to-red-900 border-2 border-amber-200 flex flex-col items-center justify-center text-center px-2 shadow-inner">
+                  <div className="w-full h-full rounded-full bg-gradient-to-b from-red-600 via-red-700 to-red-900 border-2 border-blue-100 flex flex-col items-center justify-center text-center px-2 shadow-inner">
                     <span className="font-display font-black text-white text-sm sm:text-base leading-tight tracking-wider drop-shadow">
                       {isSpinning ? 'ĐANG\nQUAY...' : 'QUAY\nNGAY'}
                     </span>
@@ -1254,14 +1254,14 @@ export default function App() {
               <div className="w-full mt-5 pt-4 border-t border-slate-200 space-y-3">
                 <div className="flex flex-wrap items-center justify-between gap-2">
                   <div className="flex items-center gap-2">
-                    <FileText className="w-4 h-4 text-amber-600" />
-                    <h3 className="font-display font-bold text-sm sm:text-base text-slate-900 uppercase tracking-wide">
+                    <FileText className="w-4 h-4 text-blue-600" />
+                    <h3 className="font-display font-bold text-sm sm:text-base text-blue-900 uppercase tracking-wide">
                       Thông Tin Bài Nộp &amp; Số Điểm
                     </h3>
                   </div>
                   <div className="flex items-center gap-3 text-xs font-mono tabular-nums text-slate-600">
                     <span>
-                      Lượt đã quay: <strong className="text-amber-600">{history.length}</strong>
+                      Lượt đã quay: <strong className="text-blue-600">{history.length}</strong>
                     </span>
                     <span>·</span>
                     <span>
@@ -1274,14 +1274,14 @@ export default function App() {
                 </div>
 
                 {activeSubmission ? (
-                  <div className="p-4 sm:p-5 rounded-2xl bg-slate-50 border border-amber-300 shadow-xs flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                  <div className="p-4 sm:p-5 rounded-2xl bg-blue-50/40 border border-blue-200 shadow-xs flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                     <div className="space-y-1.5 min-w-0 flex-1">
                       <div className="flex flex-wrap items-center gap-2">
                         <span className="font-display font-black text-base sm:text-lg text-slate-900">
                           {activeSubmission.name}
                         </span>
                         <span className="text-slate-400">·</span>
-                        <span className="text-xs sm:text-sm font-mono tabular-nums text-amber-700 font-semibold">
+                        <span className="text-xs sm:text-sm font-mono tabular-nums text-blue-700 font-semibold">
                           SĐT: {activeSubmission.phone}
                         </span>
                         <span className="text-slate-400">·</span>
@@ -1302,7 +1302,7 @@ export default function App() {
                         </span>
                         <span className="text-slate-400">·</span>
                         <span>
-                          Khoa: <strong className="text-amber-700">{activeSubmission.department}</strong>
+                          Khoa: <strong className="text-blue-700">{activeSubmission.department}</strong>
                         </span>
                         <span className="text-slate-400">·</span>
                         <span>
@@ -1316,11 +1316,11 @@ export default function App() {
                     </div>
 
                     {/* Khung hiển thị Số Điểm nổi bật */}
-                    <div className="px-5 py-3 rounded-2xl bg-amber-50 border border-amber-300 text-center shrink-0 self-stretch sm:self-center flex flex-col items-center justify-center">
-                      <span className="text-[11px] font-bold uppercase tracking-wider text-amber-700">
+                    <div className="px-5 py-3 rounded-2xl bg-blue-50 border border-blue-300 text-center shrink-0 self-stretch sm:self-center flex flex-col items-center justify-center">
+                      <span className="text-[11px] font-bold uppercase tracking-wider text-blue-700">
                         Điểm Trắc Nghiệm
                       </span>
-                      <span className="font-display font-black text-2xl sm:text-3xl text-amber-600 tabular-nums mt-0.5">
+                      <span className="font-display font-black text-2xl sm:text-3xl text-blue-600 tabular-nums mt-0.5">
                         {activeSubmission.score} / {activeSubmission.totalQuestions}
                       </span>
                     </div>
@@ -1349,8 +1349,8 @@ export default function App() {
                           }}
                           className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition cursor-pointer shrink-0 border ${
                             isSelected
-                              ? 'bg-amber-500 text-white border-amber-500 font-bold'
-                              : 'bg-white text-slate-700 border-slate-300 hover:bg-slate-50'
+                              ? 'bg-blue-600 text-white border-blue-600 font-bold'
+                              : 'bg-white text-slate-700 border-slate-300 hover:bg-blue-50'
                           }`}
                         >
                           {sub.name} ({sub.score}/10)
@@ -1364,12 +1364,12 @@ export default function App() {
 
             {/* CỘT PHẢI (40%): KHUNG HÌNH QR CODE NẰM NGANG HÀNG VỚI VÒNG QUAY & LỊCH SỬ TRÚNG QUÀ */}
             <div className="w-full lg:w-[40%] flex flex-col gap-6">
-              <section className="bg-white border border-slate-200 rounded-2xl p-5 sm:p-6 shadow-sm">
+              <section className="bg-white border border-blue-100 rounded-2xl p-5 sm:p-6 shadow-sm">
                 <div className="flex items-center justify-between gap-2 pb-3.5 mb-4 border-b border-slate-200">
                   <div className="flex items-center gap-2">
-                    <QrCode className="w-5 h-5 text-amber-600 shrink-0" />
+                    <QrCode className="w-5 h-5 text-blue-600 shrink-0" />
                     <div>
-                      <h2 className="font-display font-bold text-base sm:text-lg text-slate-900">
+                      <h2 className="font-display font-bold text-base sm:text-lg text-blue-900">
                         MÃ QR - THỬ THÁCH NHẬN QUÀ
                       </h2>
                       <p className="text-xs text-slate-500 mt-0.5">
@@ -1380,8 +1380,8 @@ export default function App() {
                 </div>
 
                 {/* Khung hiển thị Mã QR Code kích thước lớn */}
-                <div className="flex flex-col items-center justify-center gap-3.5 p-5 rounded-2xl bg-slate-50 border border-slate-200">
-                  <div className="w-64 h-64 sm:w-72 sm:h-72 rounded-2xl bg-white p-3 shadow-md shrink-0 flex items-center justify-center border-2 border-amber-400">
+                <div className="flex flex-col items-center justify-center gap-3.5 p-5 rounded-2xl bg-blue-50/40 border border-blue-100">
+                  <div className="w-64 h-64 sm:w-72 sm:h-72 rounded-2xl bg-white p-3 shadow-md shrink-0 flex items-center justify-center border-2 border-blue-500">
                     {qrDataUrl ? (
                       <img
                         src={qrDataUrl}
@@ -1394,14 +1394,14 @@ export default function App() {
                   </div>
 
                   <div className="flex flex-col items-center gap-2 text-center">
-                    <div className="text-xs sm:text-sm font-bold uppercase tracking-wider text-amber-600">
+                    <div className="text-xs sm:text-sm font-bold uppercase tracking-wider text-blue-600">
                       Quét QR Tham Gia Thử Thách
                     </div>
 
                     <button
                       type="button"
                       onClick={handleCopyChallengeLink}
-                      className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl border border-slate-300 bg-white hover:bg-slate-100 text-slate-700 text-xs font-semibold transition cursor-pointer whitespace-nowrap shadow-2xs"
+                      className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl border border-blue-200 bg-white hover:bg-blue-50 text-blue-700 text-xs font-semibold transition cursor-pointer whitespace-nowrap shadow-2xs"
                     >
                       {copiedLink ? (
                         <>
@@ -1410,7 +1410,7 @@ export default function App() {
                         </>
                       ) : (
                         <>
-                          <Copy className="w-3.5 h-3.5 text-slate-500" />
+                          <Copy className="w-3.5 h-3.5 text-blue-600" />
                           <span>Sao chép link</span>
                         </>
                       )}
@@ -1422,7 +1422,7 @@ export default function App() {
                 <div className="mt-5 pt-4 border-t border-slate-200">
                   <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
                     <div>
-                      <h3 className="text-xs sm:text-sm font-bold text-slate-900">
+                      <h3 className="text-xs sm:text-sm font-bold text-blue-900">
                         Lịch sử sinh viên trúng quà
                       </h3>
                       <p className="text-[11px] text-slate-500 tabular-nums">
@@ -1437,7 +1437,7 @@ export default function App() {
                         disabled={history.length === 0}
                         className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition whitespace-nowrap ${
                           history.length > 0
-                            ? 'bg-emerald-600 hover:bg-emerald-500 text-white cursor-pointer shadow-xs'
+                            ? 'bg-blue-600 hover:bg-blue-500 text-white cursor-pointer shadow-xs'
                             : 'bg-slate-100 text-slate-400 border border-slate-200 cursor-not-allowed'
                         }`}
                       >
@@ -1461,11 +1461,11 @@ export default function App() {
 
                   <div className="overflow-x-auto max-h-80 overflow-y-auto rounded-xl border border-slate-200 bg-white">
                     <table className="w-full text-left border-collapse text-xs">
-                      <thead className="bg-slate-50 text-slate-600 sticky top-0 z-10 border-b border-slate-200">
+                      <thead className="bg-blue-50/60 text-blue-900 sticky top-0 z-10 border-b border-slate-200">
                         <tr>
                           <th className="py-2.5 px-2.5 font-semibold">Sinh viên</th>
                           <th className="py-2.5 px-2 font-semibold">Khoa · Điểm</th>
-                          <th className="py-2.5 px-2.5 font-semibold text-amber-700">Quà trúng</th>
+                          <th className="py-2.5 px-2.5 font-semibold text-blue-700">Quà trúng</th>
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-slate-200">
@@ -1477,7 +1477,7 @@ export default function App() {
                           </tr>
                         ) : (
                           history.map((item) => (
-                            <tr key={item.id} className="hover:bg-slate-50 transition-colors">
+                            <tr key={item.id} className="hover:bg-blue-50/40 transition-colors">
                               <td className="py-2.5 px-2.5">
                                 <div className="font-semibold text-slate-900">{item.name}</div>
                                 <div className="text-[11px] font-mono tabular-nums text-slate-500">
@@ -1490,7 +1490,7 @@ export default function App() {
                                   Điểm: {item.score ?? 0}/10
                                 </div>
                               </td>
-                              <td className="py-2.5 px-2.5 font-semibold text-amber-700">
+                              <td className="py-2.5 px-2.5 font-semibold text-blue-700">
                                 {item.prize}
                               </td>
                             </tr>
@@ -1507,12 +1507,12 @@ export default function App() {
 
         {/* ================= TAB 2: KHU VỰC QUẢN TRỊ ADMIN ================= */}
         <div className={activeMainTab === 'admin' ? 'block' : 'hidden'}>
-          <section className="max-w-4xl mx-auto bg-white border border-slate-200 rounded-2xl p-5 sm:p-7 shadow-sm relative overflow-hidden">
+          <section className="max-w-4xl mx-auto bg-white border border-blue-100 rounded-2xl p-5 sm:p-7 shadow-sm relative overflow-hidden">
             <div className="flex items-center justify-between gap-2 pb-4 mb-5 border-b border-slate-200">
               <div className="flex items-center gap-2.5">
-                <Sliders className="w-5 h-5 text-amber-600 shrink-0" />
+                <Sliders className="w-5 h-5 text-blue-600 shrink-0" />
                 <div>
-                  <h2 className="font-display font-bold text-lg sm:text-xl text-slate-900">
+                  <h2 className="font-display font-bold text-lg sm:text-xl text-blue-900">
                     Khu Vực Quản Trị Admin
                   </h2>
                   <p className="text-xs text-slate-500 mt-0.5">
@@ -1550,7 +1550,7 @@ export default function App() {
               <div>
                 <label
                   htmlFor="adminSchoolInput"
-                  className="block text-xs font-bold text-slate-800 mb-1.5"
+                  className="block text-xs font-bold text-blue-900 mb-1.5"
                 >
                   1. Nhập tên trường (Đổi tiêu đề Header theo thời gian thực)
                 </label>
@@ -1562,18 +1562,18 @@ export default function App() {
                     setSettings((prev) => ({ ...prev, schoolName: e.target.value }))
                   }
                   placeholder="Ví dụ: Đại học Nông Lâm TP.HCM"
-                  className="w-full px-3.5 py-2.5 rounded-xl bg-white border border-slate-300 text-slate-900 text-sm focus:outline-none focus:border-amber-500"
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-white border border-slate-300 text-slate-900 text-sm focus:outline-none focus:border-blue-600"
                 />
               </div>
 
               {/* 2. Danh sách quà tặng: Nút Add nhập tên quà + kế bên là số lượng quà */}
-              <div className="p-4 sm:p-5 rounded-2xl bg-slate-50 border border-slate-200 space-y-3.5">
+              <div className="p-4 sm:p-5 rounded-2xl bg-blue-50/40 border border-blue-100 space-y-3.5">
                 <div className="flex items-center justify-between gap-2">
-                  <div className="flex items-center gap-1.5 text-xs sm:text-sm font-bold text-amber-700">
-                    <Package className="w-4 h-4" />
+                  <div className="flex items-center gap-1.5 text-xs sm:text-sm font-bold text-blue-800">
+                    <Package className="w-4 h-4 text-blue-600" />
                     <span>2. Danh sách quà tặng &amp; Số lượng (Về 0 tự ẩn khỏi vòng quay)</span>
                   </div>
-                  <span className="text-xs font-mono tabular-nums text-emerald-700 font-semibold">
+                  <span className="text-xs font-mono tabular-nums text-blue-700 font-semibold">
                     Còn: {totalRemainingQty} quà
                   </span>
                 </div>
@@ -1591,7 +1591,7 @@ export default function App() {
                       }
                     }}
                     placeholder="Nhập tên phần quà mới..."
-                    className="flex-1 min-w-0 px-3.5 py-2 rounded-xl bg-white border border-slate-300 text-slate-900 text-xs sm:text-sm focus:outline-none focus:border-amber-500"
+                    className="flex-1 min-w-0 px-3.5 py-2 rounded-xl bg-white border border-slate-300 text-slate-900 text-xs sm:text-sm focus:outline-none focus:border-blue-600"
                   />
                   <input
                     type="number"
@@ -1600,12 +1600,12 @@ export default function App() {
                     onChange={(e) => setNewPrizeQty(Math.max(0, Number(e.target.value) || 0))}
                     placeholder="SL"
                     title="Số lượng quà"
-                    className="w-24 px-3 py-2 rounded-xl bg-white border border-slate-300 text-center font-mono text-xs sm:text-sm text-amber-700 font-semibold tabular-nums focus:outline-none focus:border-amber-500"
+                    className="w-24 px-3 py-2 rounded-xl bg-white border border-slate-300 text-center font-mono text-xs sm:text-sm text-blue-700 font-semibold tabular-nums focus:outline-none focus:border-blue-600"
                   />
                   <button
                     type="button"
                     onClick={handleAddPrizeItem}
-                    className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-white font-display font-bold text-xs sm:text-sm transition cursor-pointer shrink-0 shadow-xs"
+                    className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-display font-bold text-xs sm:text-sm transition cursor-pointer shrink-0 shadow-xs"
                   >
                     <Plus className="w-4 h-4" />
                     <span>Add</span>
@@ -1629,7 +1629,7 @@ export default function App() {
                           type="text"
                           value={item.name}
                           onChange={(e) => handleUpdatePrizeName(item.id, e.target.value)}
-                          className="flex-1 min-w-0 px-2.5 py-1.5 rounded-lg bg-slate-50 border border-slate-200 text-xs text-slate-900 focus:outline-none focus:border-amber-500"
+                          className="flex-1 min-w-0 px-2.5 py-1.5 rounded-lg bg-slate-50 border border-slate-200 text-xs text-slate-900 focus:outline-none focus:border-blue-600"
                         />
 
                         <div className="flex items-center gap-1 shrink-0">
@@ -1644,7 +1644,7 @@ export default function App() {
                             className={`w-16 px-2 py-1 rounded-lg border text-center font-mono text-xs tabular-nums focus:outline-none ${
                               isOut
                                 ? 'bg-red-50 border-red-300 text-red-600 font-bold'
-                                : 'bg-white border-slate-300 text-amber-700 font-semibold'
+                                : 'bg-white border-slate-300 text-blue-700 font-semibold'
                             }`}
                           />
                         </div>
@@ -1664,15 +1664,15 @@ export default function App() {
               </div>
 
               {/* 3. CẤU HÌNH PHẦN QUÀ THEO ĐIỂM SỐ & KHOA HỌC */}
-              <div className="p-4 sm:p-5 rounded-2xl bg-slate-50 border border-slate-200 space-y-4">
-                <div className="text-xs sm:text-sm font-bold text-amber-700">
+              <div className="p-4 sm:p-5 rounded-2xl bg-blue-50/40 border border-blue-100 space-y-4">
+                <div className="text-xs sm:text-sm font-bold text-blue-800">
                   3. Điều chỉnh phần quà theo Khoa học &amp; Điểm số
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {/* Nhóm 1: Phần quà dành cho tất cả Khoa học điểm lớn hơn 7 */}
-                  <div className="p-4 rounded-xl bg-white border border-slate-200 space-y-3">
-                    <div className="text-xs font-bold text-emerald-700">
+                  <div className="p-4 rounded-xl bg-white border border-blue-100 space-y-3">
+                    <div className="text-xs font-bold text-blue-700">
                       3.1. Phần quà dành cho tất cả Khoa học điểm lớn hơn 7 (Điểm &gt; 7)
                     </div>
 
@@ -1688,7 +1688,7 @@ export default function App() {
                             allDeptOver7TargetPrize: e.target.value
                           }))
                         }
-                        className="w-full px-3 py-2 rounded-lg bg-white border border-slate-300 text-slate-900 text-xs focus:outline-none focus:border-amber-500"
+                        className="w-full px-3 py-2 rounded-lg bg-white border border-slate-300 text-slate-900 text-xs focus:outline-none focus:border-blue-600"
                       >
                         {settings.prizeItems.map((p) => (
                           <option key={`over7-${p.id}`} value={p.name}>
@@ -1701,7 +1701,7 @@ export default function App() {
                     <div>
                       <div className="flex items-center justify-between text-xs mb-1">
                         <span className="text-slate-600">Tỷ lệ ưu tiên trúng quà (%)</span>
-                        <span className="font-mono font-bold text-emerald-600 tabular-nums">
+                        <span className="font-mono font-bold text-blue-600 tabular-nums">
                           {settings.allDeptOver7Rate}%
                         </span>
                       </div>
@@ -1718,7 +1718,7 @@ export default function App() {
                               allDeptOver7Rate: Number(e.target.value)
                             }))
                           }
-                          className="w-full accent-emerald-600 cursor-pointer"
+                          className="w-full accent-blue-600 cursor-pointer"
                         />
                         <input
                           type="number"
@@ -1735,15 +1735,15 @@ export default function App() {
                               allDeptOver7Rate: val
                             }));
                           }}
-                          className="w-16 px-2 py-1 rounded-lg bg-white border border-slate-300 text-center font-mono text-xs text-emerald-700 font-semibold tabular-nums"
+                          className="w-16 px-2 py-1 rounded-lg bg-white border border-slate-300 text-center font-mono text-xs text-blue-700 font-semibold tabular-nums"
                         />
                       </div>
                     </div>
                   </div>
 
                   {/* Nhóm 2: Phần quà dành cho Khoa Chăn nuôi, Thú y điểm lớn hơn 8 */}
-                  <div className="p-4 rounded-xl bg-white border border-slate-200 space-y-3">
-                    <div className="text-xs font-bold text-amber-700">
+                  <div className="p-4 rounded-xl bg-white border border-blue-100 space-y-3">
+                    <div className="text-xs font-bold text-blue-700">
                       3.2. Phần quà dành cho Khoa Chăn nuôi, Thú y điểm lớn hơn 8 (Điểm &gt; 8)
                     </div>
 
@@ -1761,7 +1761,7 @@ export default function App() {
                           }))
                         }
                         placeholder="Chăn nuôi, Thú y"
-                        className="w-full px-3 py-1.5 rounded-lg bg-white border border-slate-300 text-slate-900 text-xs focus:outline-none focus:border-amber-500"
+                        className="w-full px-3 py-1.5 rounded-lg bg-white border border-slate-300 text-slate-900 text-xs focus:outline-none focus:border-blue-600"
                       />
                     </div>
 
@@ -1777,7 +1777,7 @@ export default function App() {
                             vetDeptOver8TargetPrize: e.target.value
                           }))
                         }
-                        className="w-full px-3 py-2 rounded-lg bg-white border border-slate-300 text-slate-900 text-xs focus:outline-none focus:border-amber-500"
+                        className="w-full px-3 py-2 rounded-lg bg-white border border-slate-300 text-slate-900 text-xs focus:outline-none focus:border-blue-600"
                       >
                         {settings.prizeItems.map((p) => (
                           <option key={`vet8-${p.id}`} value={p.name}>
@@ -1790,7 +1790,7 @@ export default function App() {
                     <div>
                       <div className="flex items-center justify-between text-xs mb-1">
                         <span className="text-slate-600">Tỷ lệ ưu tiên trúng quà (%)</span>
-                        <span className="font-mono font-bold text-amber-600 tabular-nums">
+                        <span className="font-mono font-bold text-blue-600 tabular-nums">
                           {settings.vetDeptOver8Rate}%
                         </span>
                       </div>
@@ -1807,7 +1807,7 @@ export default function App() {
                               vetDeptOver8Rate: Number(e.target.value)
                             }))
                           }
-                          className="w-full accent-amber-500 cursor-pointer"
+                          className="w-full accent-blue-600 cursor-pointer"
                         />
                         <input
                           type="number"
@@ -1824,7 +1824,7 @@ export default function App() {
                               vetDeptOver8Rate: val
                             }));
                           }}
-                          className="w-16 px-2 py-1 rounded-lg bg-white border border-slate-300 text-center font-mono text-xs text-amber-700 font-semibold tabular-nums"
+                          className="w-16 px-2 py-1 rounded-lg bg-white border border-slate-300 text-center font-mono text-xs text-blue-700 font-semibold tabular-nums"
                         />
                       </div>
                     </div>
@@ -1832,21 +1832,21 @@ export default function App() {
                 </div>
 
                 {/* Ghi chú Nhóm 3 */}
-                <div className="px-3.5 py-2.5 rounded-xl bg-white border border-slate-200 text-xs text-slate-600 leading-relaxed">
-                  <strong className="text-amber-700">3.3. Tất cả phần quà còn lại:</strong> Tự động
+                <div className="px-3.5 py-2.5 rounded-xl bg-white border border-blue-100 text-xs text-slate-600 leading-relaxed">
+                  <strong className="text-blue-700">3.3. Tất cả phần quà còn lại:</strong> Tự động
                   quay ngẫu nhiên công bằng trong các phần quà còn số lượng (&gt; 0), không cần
                   tham chiếu số điểm và Khoa học.
                 </div>
               </div>
 
               {/* 4. TẠO DỰNG 10 CÂU HỎI TRẮC NGHIỆM (4 ĐÁP ÁN: 1 ĐÚNG, 3 SAI) */}
-              <div className="p-4 sm:p-5 rounded-2xl bg-slate-50 border border-slate-200 space-y-3.5">
+              <div className="p-4 sm:p-5 rounded-2xl bg-blue-50/40 border border-blue-100 space-y-3.5">
                 <div className="flex items-center justify-between gap-2">
-                  <div className="flex items-center gap-1.5 text-xs sm:text-sm font-bold text-amber-700">
-                    <HelpCircle className="w-4 h-4" />
+                  <div className="flex items-center gap-1.5 text-xs sm:text-sm font-bold text-blue-800">
+                    <HelpCircle className="w-4 h-4 text-blue-600" />
                     <span>4. Thiết lập 10 Câu Hỏi Trắc Nghiệm (1 đúng, 3 sai)</span>
                   </div>
-                  <span className="text-xs font-semibold text-slate-500">
+                  <span className="text-xs font-semibold text-blue-700">
                     Câu {activeQuestionTab + 1} / 10
                   </span>
                 </div>
@@ -1860,8 +1860,8 @@ export default function App() {
                       onClick={() => setActiveQuestionTab(idx)}
                       className={`py-2 rounded-lg font-mono text-xs font-bold transition cursor-pointer tabular-nums border ${
                         activeQuestionTab === idx
-                          ? 'bg-amber-500 text-white border-amber-500 shadow-xs'
-                          : 'bg-white text-slate-700 hover:bg-slate-100 border-slate-200'
+                          ? 'bg-blue-600 text-white border-blue-600 shadow-xs'
+                          : 'bg-white text-slate-700 hover:bg-blue-50 border-slate-200'
                       }`}
                     >
                       {idx + 1}
@@ -1872,7 +1872,7 @@ export default function App() {
                 {/* Khung soạn thảo câu hỏi đang chọn */}
                 <div className="space-y-3 pt-1">
                   <div>
-                    <label className="block text-xs font-semibold text-slate-700 mb-1">
+                    <label className="block text-xs font-semibold text-blue-900 mb-1">
                       Nội dung Câu hỏi số {activeQuestionTab + 1}:
                     </label>
                     <textarea
@@ -1882,7 +1882,7 @@ export default function App() {
                         handleUpdateQuestionText(activeQuestionTab, e.target.value)
                       }
                       placeholder={`Nhập nội dung câu hỏi số ${activeQuestionTab + 1}...`}
-                      className="w-full px-3.5 py-2 rounded-xl bg-white border border-slate-300 text-slate-900 text-xs sm:text-sm focus:outline-none focus:border-amber-500"
+                      className="w-full px-3.5 py-2 rounded-xl bg-white border border-slate-300 text-slate-900 text-xs sm:text-sm focus:outline-none focus:border-blue-600"
                     />
                   </div>
 
@@ -1898,7 +1898,7 @@ export default function App() {
                           key={optIdx}
                           className={`flex items-center gap-2 p-2.5 rounded-xl border transition ${
                             isCorrect
-                              ? 'bg-emerald-50 border-emerald-300'
+                              ? 'bg-blue-50 border-blue-400'
                               : 'bg-white border-slate-200'
                           }`}
                         >
@@ -1909,7 +1909,7 @@ export default function App() {
                             }
                             className={`px-2.5 py-1 rounded-lg text-xs font-bold shrink-0 cursor-pointer transition ${
                               isCorrect
-                                ? 'bg-emerald-600 text-white'
+                                ? 'bg-blue-600 text-white'
                                 : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
                             }`}
                             title="Chọn làm đáp án đúng"
@@ -1942,7 +1942,7 @@ export default function App() {
                 <button
                   type="button"
                   onClick={handleSaveSettings}
-                  className="flex-1 inline-flex items-center justify-center gap-2 py-3 px-4 rounded-xl bg-amber-500 hover:bg-amber-400 text-white font-display font-bold text-xs sm:text-sm transition cursor-pointer shadow-sm"
+                  className="flex-1 inline-flex items-center justify-center gap-2 py-3 px-4 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-display font-bold text-xs sm:text-sm transition cursor-pointer shadow-sm"
                 >
                   <Save className="w-4 h-4" />
                   <span>Lưu cài đặt</span>
@@ -1960,7 +1960,7 @@ export default function App() {
               </div>
 
               {saveSuccessMessage && (
-                <div className="flex items-center justify-center gap-1.5 text-xs font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200 rounded-xl py-2.5 px-3">
+                <div className="flex items-center justify-center gap-1.5 text-xs font-semibold text-blue-700 bg-blue-50 border border-blue-200 rounded-xl py-2.5 px-3">
                   <CheckCircle2 className="w-4 h-4 shrink-0" />
                   <span>{saveSuccessMessage}</span>
                 </div>
@@ -1970,12 +1970,12 @@ export default function App() {
             {/* LỚP PHỦ (OVERLAY) YÊU CẦU ĐĂNG NHẬP ADMIN KHI ĐANG KHÓA */}
             {!isAdminUnlocked && (
               <div className="absolute inset-0 z-20 bg-white/75 backdrop-blur-[2px] flex flex-col items-center justify-center p-5">
-                <div className="w-full max-w-sm bg-white border border-slate-200 rounded-2xl p-6 shadow-xl">
+                <div className="w-full max-w-sm bg-white border border-blue-200 rounded-2xl p-6 shadow-xl">
                   <div className="text-center mb-4">
-                    <div className="w-12 h-12 rounded-2xl bg-amber-100 border border-amber-300 text-amber-700 flex items-center justify-center mx-auto mb-2.5">
+                    <div className="w-12 h-12 rounded-2xl bg-blue-100 border border-blue-300 text-blue-700 flex items-center justify-center mx-auto mb-2.5">
                       <Lock className="w-5 h-5" />
                     </div>
-                    <h3 className="font-display font-bold text-base text-slate-900">
+                    <h3 className="font-display font-bold text-base text-blue-900">
                       Mở Khóa Quản Trị Admin
                     </h3>
                     <p className="text-xs text-slate-500 mt-0.5">
@@ -1987,7 +1987,7 @@ export default function App() {
                     <div>
                       <label
                         htmlFor="adminUserField"
-                        className="block text-xs font-semibold text-slate-700 mb-1"
+                        className="block text-xs font-semibold text-blue-900 mb-1"
                       >
                         Tài khoản Admin
                       </label>
@@ -2001,14 +2001,14 @@ export default function App() {
                         }}
                         placeholder="Nhập tài khoản (Admin)"
                         autoComplete="username"
-                        className="w-full px-3.5 py-2.5 rounded-xl bg-white border border-slate-300 text-slate-900 text-xs sm:text-sm focus:outline-none focus:border-amber-500"
+                        className="w-full px-3.5 py-2.5 rounded-xl bg-white border border-slate-300 text-slate-900 text-xs sm:text-sm focus:outline-none focus:border-blue-600"
                       />
                     </div>
 
                     <div>
                       <label
                         htmlFor="adminPassField"
-                        className="block text-xs font-semibold text-slate-700 mb-1"
+                        className="block text-xs font-semibold text-blue-900 mb-1"
                       >
                         Mật khẩu
                       </label>
@@ -2022,7 +2022,7 @@ export default function App() {
                         }}
                         placeholder="Nhập mật khẩu"
                         autoComplete="current-password"
-                        className="w-full px-3.5 py-2.5 rounded-xl bg-white border border-slate-300 text-slate-900 text-xs sm:text-sm focus:outline-none focus:border-amber-500"
+                        className="w-full px-3.5 py-2.5 rounded-xl bg-white border border-slate-300 text-slate-900 text-xs sm:text-sm focus:outline-none focus:border-blue-600"
                       />
                     </div>
 
@@ -2034,7 +2034,7 @@ export default function App() {
 
                     <button
                       type="submit"
-                      className="w-full inline-flex items-center justify-center gap-1.5 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-white font-display font-bold text-xs sm:text-sm transition cursor-pointer shadow-sm"
+                      className="w-full inline-flex items-center justify-center gap-1.5 py-2.5 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-display font-bold text-xs sm:text-sm transition cursor-pointer shadow-sm"
                     >
                       <Unlock className="w-4 h-4" />
                       <span>Đăng nhập &amp; Mở khóa</span>
@@ -2050,12 +2050,12 @@ export default function App() {
       {/* 3. POPUP (MODAL) CHÚC MỪNG SINH VIÊN KHI VÒNG QUAY DỪNG LẠI */}
       {winnerModalData && (
         <div className="fixed inset-0 z-40 flex items-center justify-center bg-slate-900/50 backdrop-blur-xs p-4">
-          <div className="w-full max-w-md bg-white border-2 border-amber-400 rounded-3xl p-6 sm:p-8 text-center shadow-2xl relative">
-            <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-amber-400 via-amber-500 to-orange-500 text-white flex items-center justify-center mx-auto mb-4 shadow-md">
+          <div className="w-full max-w-md bg-white border-2 border-blue-500 rounded-3xl p-6 sm:p-8 text-center shadow-2xl relative">
+            <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-blue-500 via-blue-600 to-indigo-600 text-white flex items-center justify-center mx-auto mb-4 shadow-md">
               <Gift className="w-9 h-9" />
             </div>
 
-            <div className="text-xs font-extrabold uppercase tracking-widest text-amber-600">
+            <div className="text-xs font-extrabold uppercase tracking-widest text-blue-600">
               Chúc Mừng Bạn Đã Trúng Thưởng!
             </div>
 
@@ -2065,18 +2065,18 @@ export default function App() {
 
             <div className="text-xs sm:text-sm text-slate-600 mt-1.5">
               {winnerModalData.school} · Khoa{' '}
-              <strong className="text-slate-900">{winnerModalData.department}</strong> ·{' '}
+              <strong className="text-blue-700">{winnerModalData.department}</strong> ·{' '}
               <span>{winnerModalData.year}</span>
             </div>
             <div className="text-xs font-mono tabular-nums text-emerald-600 font-semibold mt-1">
               Điểm Thử Thách: {winnerModalData.score}/10 · SĐT: {winnerModalData.phone}
             </div>
 
-            <div className="my-6 py-5 px-5 rounded-2xl bg-amber-50 border border-amber-300">
-              <div className="text-xs text-amber-800 font-medium mb-1">
+            <div className="my-6 py-5 px-5 rounded-2xl bg-blue-50 border border-blue-300">
+              <div className="text-xs text-blue-800 font-medium mb-1">
                 Phần quà nhận được từ chương trình:
               </div>
-              <div className="font-display font-black text-xl sm:text-2xl text-amber-600 tracking-tight">
+              <div className="font-display font-black text-xl sm:text-2xl text-blue-700 tracking-tight">
                 {winnerModalData.prize}
               </div>
             </div>
@@ -2084,7 +2084,7 @@ export default function App() {
             <button
               type="button"
               onClick={() => setWinnerModalData(null)}
-              className="w-full py-3.5 px-5 rounded-xl bg-gradient-to-r from-amber-500 via-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-white font-display font-extrabold text-sm transition cursor-pointer shadow-md"
+              className="w-full py-3.5 px-5 rounded-xl bg-gradient-to-r from-blue-600 via-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-display font-extrabold text-sm transition cursor-pointer shadow-md"
             >
               Nhận quà &amp; Mời sinh viên tiếp theo
             </button>
@@ -2094,14 +2094,14 @@ export default function App() {
 
       {/* THANH 2 TAB CÔNG CỤ (VÒNG QUAY & ADMIN) Ở DƯỚI CUỐI MÀN HÌNH */}
       <div className="fixed bottom-4 left-1/2 -translate-x-1/2 z-30">
-        <div className="flex items-center gap-1.5 bg-white/95 backdrop-blur-md p-1.5 rounded-2xl border border-slate-300 shadow-lg">
+        <div className="flex items-center gap-1.5 bg-white/95 backdrop-blur-md p-1.5 rounded-2xl border border-blue-200 shadow-lg">
           <button
             type="button"
             onClick={() => setActiveMainTab('wheel')}
             className={`inline-flex items-center gap-2 px-5 py-2.5 rounded-xl font-display font-bold text-xs sm:text-sm transition cursor-pointer ${
               activeMainTab === 'wheel'
-                ? 'bg-amber-500 text-white shadow-xs'
-                : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
+                ? 'bg-blue-600 text-white shadow-xs'
+                : 'text-slate-600 hover:text-blue-700 hover:bg-blue-50'
             }`}
           >
             <Disc className="w-4 h-4" />
@@ -2113,8 +2113,8 @@ export default function App() {
             onClick={() => setActiveMainTab('admin')}
             className={`inline-flex items-center gap-2 px-5 py-2.5 rounded-xl font-display font-bold text-xs sm:text-sm transition cursor-pointer ${
               activeMainTab === 'admin'
-                ? 'bg-amber-500 text-white shadow-xs'
-                : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
+                ? 'bg-blue-600 text-white shadow-xs'
+                : 'text-slate-600 hover:text-blue-700 hover:bg-blue-50'
             }`}
           >
             <Sliders className="w-4 h-4" />
@@ -2128,12 +2128,12 @@ export default function App() {
         <button
           type="button"
           onClick={() => setSoundEnabled((prev) => !prev)}
-          className="w-12 h-12 rounded-full bg-white hover:bg-slate-50 border border-slate-300 hover:border-amber-500 shadow-lg flex items-center justify-center text-slate-700 transition-all cursor-pointer active:scale-95 group focus:outline-none focus:ring-2 focus:ring-amber-400/50"
+          className="w-12 h-12 rounded-full bg-white hover:bg-blue-50 border border-blue-200 hover:border-blue-500 shadow-lg flex items-center justify-center text-slate-700 transition-all cursor-pointer active:scale-95 group focus:outline-none focus:ring-2 focus:ring-blue-400/50"
           title={soundEnabled ? 'Tắt âm thanh' : 'Bật âm thanh'}
           aria-label={soundEnabled ? 'Tắt âm thanh' : 'Bật âm thanh'}
         >
           {soundEnabled ? (
-            <Volume2 className="w-5 h-5 text-amber-600 group-hover:scale-110 transition-transform" />
+            <Volume2 className="w-5 h-5 text-blue-600 group-hover:scale-110 transition-transform" />
           ) : (
             <VolumeX className="w-5 h-5 text-slate-400 group-hover:scale-110 transition-transform" />
           )}
