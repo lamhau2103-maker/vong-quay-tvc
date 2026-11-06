@@ -20,8 +20,12 @@ export type SyncEventPayload =
       winnerRecord: WinnerRecord;
     }
   | {
+      type: 'SCHOOL_UPDATED';
+      schoolName: string;
+    }
+  | {
       type: 'SETTINGS_UPDATED';
-      settings: AppSettings;
+      settings: Partial<AppSettings> & { schoolName: string };
     }
   | {
       type: 'CLEAR_HISTORY';
@@ -70,11 +74,52 @@ export function subscribeLocalChannelEvents(
 
 /**
  * Đẩy sự kiện lên Cloud Relay (ntfy.sh) để điện thoại quét QR (kể cả khác mạng 4G/WiFi hoặc khác container ais-pre / ais-dev)
- * truyền thẳng thông tin bài nộp về màn hình Vòng Quay ngay lập tức.
+ * truyền thẳng thông tin bài nộp và tên trường về màn hình ngay lập tức.
  */
 export async function publishCloudSyncEvent(payload: SyncEventPayload): Promise<void> {
   broadcastLocalChannelEvent(payload);
   try {
+    if (payload.type === 'SETTINGS_UPDATED') {
+      // Gửi gói tin nhỏ gọn (< 200 bytes) chứa schoolName để đảm bảo ntfy.sh không bao giờ vượt giới hạn 4KB
+      const compactSchoolPayload: SyncEventPayload = {
+        type: 'SCHOOL_UPDATED',
+        schoolName: payload.settings.schoolName
+      };
+      await fetch(CLOUD_SYNC_BASE_URL, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'text/plain;charset=utf-8'
+        },
+        body: JSON.stringify(compactSchoolPayload)
+      });
+
+      const fullStr = JSON.stringify(payload);
+      if (new Blob([fullStr]).size <= 3800) {
+        await fetch(CLOUD_SYNC_BASE_URL, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'text/plain;charset=utf-8'
+          },
+          body: fullStr
+        });
+      } else {
+        // Nếu bộ câu hỏi lớn hơn 3.8KB, gửi cấu hình gọn không kèm mảng câu hỏi dài
+        const { questions: _omittedQuestions, ...restSettings } = payload.settings;
+        void _omittedQuestions;
+        await fetch(CLOUD_SYNC_BASE_URL, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'text/plain;charset=utf-8'
+          },
+          body: JSON.stringify({
+            type: 'SETTINGS_UPDATED',
+            settings: restSettings
+          })
+        });
+      }
+      return;
+    }
+
     await fetch(CLOUD_SYNC_BASE_URL, {
       method: 'POST',
       headers: {

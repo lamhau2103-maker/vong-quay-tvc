@@ -262,6 +262,11 @@ export default function App() {
       if (payload.winnerRecord?.id) {
         setHistory((prev) => mergeHistoryList(prev, [payload.winnerRecord]));
       }
+    } else if (payload.type === 'SCHOOL_UPDATED' && payload.schoolName) {
+      setSettings((prev) => ({
+        ...prev,
+        schoolName: payload.schoolName
+      }));
     } else if (payload.type === 'SETTINGS_UPDATED' && payload.settings) {
       setSettings((prev) => ({
         ...prev,
@@ -305,6 +310,21 @@ export default function App() {
       let serverSubs: StudentSubmission[] = [];
       let serverHistory: WinnerRecord[] = [];
 
+      // Trích xuất cấu hình và tên trường mới nhất từ Cloud Sync
+      let latestCloudSettings: (Partial<AppSettings> & { schoolName: string }) | null = null;
+      let latestCloudSchoolName: string | null = null;
+
+      for (const ev of cloudEvents) {
+        if (ev.type === 'SCHOOL_UPDATED' && ev.schoolName?.trim()) {
+          latestCloudSchoolName = ev.schoolName.trim();
+        } else if (ev.type === 'SETTINGS_UPDATED' && ev.settings) {
+          latestCloudSettings = ev.settings;
+          if (ev.settings.schoolName?.trim()) {
+            latestCloudSchoolName = ev.settings.schoolName.trim();
+          }
+        }
+      }
+
       if (serverRes && serverRes.ok) {
         const data = await serverRes.json();
         if (Array.isArray(data?.submissions)) {
@@ -314,14 +334,6 @@ export default function App() {
           serverHistory = data.history;
         }
 
-        // Trích xuất cấu hình mới nhất từ Cloud Sync trước
-        let latestCloudSettings: AppSettings | null = null;
-        for (const ev of cloudEvents) {
-          if (ev.type === 'SETTINGS_UPDATED' && ev.settings) {
-            latestCloudSettings = ev.settings;
-          }
-        }
-
         // Chỉ cập nhật settings từ Server/Cloud khi Admin không đang mở khóa chỉnh sửa trực tiếp
         if (!isAdminUnlockedRef.current) {
           const sourceSettings = latestCloudSettings || data?.settings;
@@ -329,10 +341,10 @@ export default function App() {
             setSettings((prev) => ({
               ...prev,
               ...sourceSettings,
-              // Nếu quét mã QR có chứa ?school=..., ưu tiên giữ tên trường từ Cloud hoặc từ mã QR thay vì bị ghi đè bởi mặc định cũ
+              // Ưu tiên tên trường được mã hóa trong mã QR vừa quét (?school=...) hoặc tên trường mới nhất từ Cloud
               schoolName:
-                latestCloudSettings?.schoolName?.trim() ||
                 urlSchoolParam ||
+                latestCloudSchoolName ||
                 sourceSettings.schoolName ||
                 prev.schoolName,
               prizeItems:
@@ -354,7 +366,6 @@ export default function App() {
       const cloudSubs: StudentSubmission[] = [];
       const cloudSpunMap = new Map<string, string>();
       const cloudWinners: WinnerRecord[] = [];
-      let latestCloudSettingsFallback: AppSettings | null = null;
 
       for (const ev of cloudEvents) {
         if (ev.type === 'NEW_SUBMISSION' && ev.submission?.id) {
@@ -366,24 +377,29 @@ export default function App() {
           if (ev.winnerRecord?.id) {
             cloudWinners.push(ev.winnerRecord);
           }
-        } else if (ev.type === 'SETTINGS_UPDATED' && ev.settings) {
-          latestCloudSettingsFallback = ev.settings;
         }
       }
 
-      if (latestCloudSettingsFallback && !isAdminUnlockedRef.current) {
-        const s = latestCloudSettingsFallback;
+      if ((latestCloudSettings || latestCloudSchoolName) && !isAdminUnlockedRef.current) {
         setSettings((prev) => ({
           ...prev,
-          ...s,
-          schoolName: s.schoolName?.trim() || urlSchoolParam || prev.schoolName,
+          ...(latestCloudSettings || {}),
+          schoolName:
+            urlSchoolParam ||
+            latestCloudSchoolName ||
+            latestCloudSettings?.schoolName?.trim() ||
+            prev.schoolName,
           prizeItems:
-            Array.isArray(s.prizeItems) && s.prizeItems.length > 0
-              ? s.prizeItems
+            latestCloudSettings &&
+            Array.isArray(latestCloudSettings.prizeItems) &&
+            latestCloudSettings.prizeItems.length > 0
+              ? latestCloudSettings.prizeItems
               : prev.prizeItems,
           questions:
-            Array.isArray(s.questions) && s.questions.length === 10
-              ? s.questions
+            latestCloudSettings &&
+            Array.isArray(latestCloudSettings.questions) &&
+            latestCloudSettings.questions.length === 10
+              ? latestCloudSettings.questions
               : prev.questions
         }));
       }
