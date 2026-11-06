@@ -60,7 +60,10 @@ export default function ChallengePage({
 
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
-  const [school, setSchool] = useState(settings.schoolName || 'Đại học Nông Lâm TP.HCM');
+  const [school, setSchool] = useState(
+    settings.schoolName?.trim() || 'Đại học Nông Lâm TP.HCM'
+  );
+  const [isSchoolManuallyEdited, setIsSchoolManuallyEdited] = useState(false);
   const [department, setDepartment] = useState('');
   const [year, setYear] = useState('');
   const [answers, setAnswers] = useState<Record<number, number>>({});
@@ -68,11 +71,13 @@ export default function ChallengePage({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submittedResult, setSubmittedResult] = useState<StudentSubmission | null>(null);
 
+  // Tự động cập nhật mục 3 (Tên Trường) theo đúng nội dung Tên Trường trên tiêu đề Header mà Admin đã nhập
   useEffect(() => {
-    if (!school && settings.schoolName) {
-      setSchool(settings.schoolName);
+    const adminSchool = settings.schoolName?.trim();
+    if (adminSchool && !isSchoolManuallyEdited) {
+      setSchool(adminSchool);
     }
-  }, [settings.schoolName, school]);
+  }, [settings.schoolName, isSchoolManuallyEdited]);
 
   const answeredCount = Object.keys(answers).length;
 
@@ -339,7 +344,10 @@ export default function ChallengePage({
                   <input
                     type="text"
                     value={school}
-                    onChange={(e) => setSchool(e.target.value)}
+                    onChange={(e) => {
+                      setSchool(e.target.value);
+                      setIsSchoolManuallyEdited(true);
+                    }}
                     placeholder="Ví dụ: Đại học Nông Lâm TP.HCM"
                     className="w-full px-3.5 py-2.5 rounded-xl bg-white border border-slate-300 text-slate-900 placeholder-slate-400 text-sm focus:outline-none focus:border-blue-600 transition"
                   />

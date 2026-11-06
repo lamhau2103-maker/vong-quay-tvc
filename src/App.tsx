@@ -189,6 +189,12 @@ export default function App() {
   const confettiCanvasRef = useRef<HTMLCanvasElement | null>(null);
   const currentRotationRef = useRef<number>(0);
   const audioCtxRef = useRef<AudioContext | null>(null);
+  const isAdminUnlockedRef = useRef<boolean>(false);
+  const schoolSyncTimerRef = useRef<number | null>(null);
+
+  useEffect(() => {
+    isAdminUnlockedRef.current = isAdminUnlocked;
+  }, [isAdminUnlocked]);
 
   // Đường dẫn URL dẫn thẳng đến window.location.origin + window.location.pathname + '?mode=challenge'
   const challengeUrl = useMemo(() => {
@@ -281,35 +287,48 @@ export default function App() {
 
       if (serverRes && serverRes.ok) {
         const data = await serverRes.json();
-        if (data?.settings) {
-          setSettings((prev) => ({
-            ...prev,
-            ...data.settings,
-            prizeItems:
-              Array.isArray(data.settings.prizeItems) &&
-              data.settings.prizeItems.length > 0
-                ? data.settings.prizeItems
-                : prev.prizeItems,
-            questions:
-              Array.isArray(data.settings.questions) &&
-              data.settings.questions.length === 10
-                ? data.settings.questions
-                : prev.questions
-          }));
-        }
         if (Array.isArray(data?.submissions)) {
           serverSubs = data.submissions;
         }
         if (Array.isArray(data?.history)) {
           serverHistory = data.history;
         }
+
+        // Trích xuất cấu hình mới nhất từ Cloud Sync trước
+        let latestCloudSettings: AppSettings | null = null;
+        for (const ev of cloudEvents) {
+          if (ev.type === 'SETTINGS_UPDATED' && ev.settings) {
+            latestCloudSettings = ev.settings;
+          }
+        }
+
+        // Chỉ cập nhật settings từ Server/Cloud khi Admin không đang mở khóa chỉnh sửa trực tiếp
+        if (!isAdminUnlockedRef.current) {
+          const sourceSettings = latestCloudSettings || data?.settings;
+          if (sourceSettings) {
+            setSettings((prev) => ({
+              ...prev,
+              ...sourceSettings,
+              prizeItems:
+                Array.isArray(sourceSettings.prizeItems) &&
+                sourceSettings.prizeItems.length > 0
+                  ? sourceSettings.prizeItems
+                  : prev.prizeItems,
+              questions:
+                Array.isArray(sourceSettings.questions) &&
+                sourceSettings.questions.length === 10
+                  ? sourceSettings.questions
+                  : prev.questions
+            }));
+          }
+        }
       }
 
-      // Trích xuất các bài nộp và cấu hình mới nhất từ Cloud Sync
+      // Trích xuất các bài nộp từ Cloud Sync
       const cloudSubs: StudentSubmission[] = [];
       const cloudSpunMap = new Map<string, string>();
       const cloudWinners: WinnerRecord[] = [];
-      let latestCloudSettings: AppSettings | null = null;
+      let latestCloudSettingsFallback: AppSettings | null = null;
 
       for (const ev of cloudEvents) {
         if (ev.type === 'NEW_SUBMISSION' && ev.submission?.id) {
@@ -322,12 +341,12 @@ export default function App() {
             cloudWinners.push(ev.winnerRecord);
           }
         } else if (ev.type === 'SETTINGS_UPDATED' && ev.settings) {
-          latestCloudSettings = ev.settings;
+          latestCloudSettingsFallback = ev.settings;
         }
       }
 
-      if (latestCloudSettings) {
-        const s = latestCloudSettings;
+      if (latestCloudSettingsFallback && !isAdminUnlockedRef.current) {
+        const s = latestCloudSettingsFallback;
         setSettings((prev) => ({
           ...prev,
           ...s,
@@ -402,7 +421,7 @@ export default function App() {
       try {
         const parsed = JSON.parse(event.data);
         if (parsed?.state && isMounted) {
-          if (parsed.state.settings) {
+          if (parsed.state.settings && !isAdminUnlockedRef.current) {
             setSettings((prev) => ({
               ...prev,
               ...parsed.state.settings,
@@ -1335,7 +1354,7 @@ export default function App() {
 
   const displaySchoolName =
     settings.schoolName.trim().length > 0
-      ? settings.schoolName.trim().toUpperCase()
+      ? settings.schoolName.trim()
       : 'ĐẠI HỌC NÔNG LÂM TP.HCM';
 
   const currentEditingQuestion =
@@ -1824,9 +1843,33 @@ export default function App() {
                   id="adminSchoolInput"
                   type="text"
                   value={settings.schoolName}
-                  onChange={(e) =>
-                    setSettings((prev) => ({ ...prev, schoolName: e.target.value }))
-                  }
+                  onChange={(e) => {
+                    const nextSchoolName = e.target.value;
+                    setSettings((prev) => {
+                      const nextSettings = { ...prev, schoolName: nextSchoolName };
+                      try {
+                        localStorage.setItem(
+                          STORAGE_KEY_SETTINGS,
+                          JSON.stringify(nextSettings)
+                        );
+                      } catch {}
+                      if (schoolSyncTimerRef.current) {
+                        window.clearTimeout(schoolSyncTimerRef.current);
+                      }
+                      schoolSyncTimerRef.current = window.setTimeout(() => {
+                        fetch('/api/settings', {
+                          method: 'POST',
+                          headers: { 'Content-Type': 'application/json' },
+                          body: JSON.stringify(nextSettings)
+                        }).catch(() => {});
+                        publishCloudSyncEvent({
+                          type: 'SETTINGS_UPDATED',
+                          settings: nextSettings
+                        }).catch(() => {});
+                      }, 300);
+                      return nextSettings;
+                    });
+                  }}
                   placeholder="Ví dụ: Đại học Nông Lâm TP.HCM"
                   className="w-full px-3.5 py-2.5 rounded-xl bg-white border border-slate-300 text-slate-900 text-sm focus:outline-none focus:border-blue-600"
                 />
