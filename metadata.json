@@ -1,0 +1,6 @@
+{
+  "name": "Vòng Quay Chiếc Nón Kỳ Diệu - Ngày Hội Việc Làm",
+  "description": "Ứng dụng Vòng Quay Chiếc Nón Kỳ Diệu tương tác phục vụ tuyển dụng tại Ngày Hội Việc Làm với quản trị tỷ lệ trúng quà theo Khoa và xuất danh sách sinh viên.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
