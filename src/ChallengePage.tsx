@@ -16,6 +16,7 @@ import {
 interface ChallengePageProps {
   settings: AppSettings;
   onSubmitSuccess: (submission: StudentSubmission) => void;
+  onBackToWheel?: () => void;
 }
 
 const DEPARTMENT_SUGGESTIONS = [
@@ -47,7 +48,8 @@ const OPTION_LABELS = ['A', 'B', 'C', 'D'];
 
 export default function ChallengePage({
   settings,
-  onSubmitSuccess
+  onSubmitSuccess,
+  onBackToWheel
 }: ChallengePageProps) {
   const questions =
     Array.isArray(settings.questions) && settings.questions.length === 10
@@ -266,6 +268,18 @@ export default function ChallengePage({
               <strong>Vòng Quay Chiếc Nón Kỳ Diệu</strong>. Hãy đến khu vực vòng quay để bấm{' '}
               <strong>QUAY NGAY</strong> nhận quà!
             </div>
+
+            {onBackToWheel && (
+              <div className="pt-2">
+                <button
+                  type="button"
+                  onClick={onBackToWheel}
+                  className="w-full py-3.5 px-5 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-display font-extrabold text-sm transition cursor-pointer shadow-md"
+                >
+                  Chuyển Đến Trang Vòng Quay Ngay
+                </button>
+              </div>
+            )}
           </div>
         ) : (
           /* BIỂU MẪU NHẬP LIỆU SINH VIÊN + 10 CÂU HỎI TRẮC NGHIỆM (TONE XANH DƯƠNG) */

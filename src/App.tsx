@@ -111,6 +111,13 @@ export default function App() {
     return () => window.removeEventListener('popstate', handlePopState);
   }, []);
 
+  // Kiểm tra tên trường được mã hóa trực tiếp trong QR code (?mode=challenge&school=...)
+  const urlSchoolParam = useMemo(() => {
+    if (typeof window === 'undefined') return null;
+    const raw = new URLSearchParams(window.location.search).get('school')?.trim();
+    return raw && raw.length > 0 ? raw : null;
+  }, []);
+
   // --- STATE CẤU HÌNH ADMIN ---
   const [settings, setSettings] = useState<AppSettings>(() => {
     try {
@@ -120,6 +127,7 @@ export default function App() {
         return {
           ...DEFAULT_SETTINGS,
           ...parsed,
+          schoolName: urlSchoolParam || parsed.schoolName || DEFAULT_SETTINGS.schoolName,
           prizeItems:
             Array.isArray(parsed.prizeItems) && parsed.prizeItems.length > 0
               ? parsed.prizeItems
@@ -133,7 +141,10 @@ export default function App() {
     } catch {
       // Fallback
     }
-    return DEFAULT_SETTINGS;
+    return {
+      ...DEFAULT_SETTINGS,
+      schoolName: urlSchoolParam || DEFAULT_SETTINGS.schoolName
+    };
   });
 
   // --- STATE NHẬP THÊM QUÀ MỚI TRONG ADMIN ---
@@ -196,13 +207,22 @@ export default function App() {
     isAdminUnlockedRef.current = isAdminUnlocked;
   }, [isAdminUnlocked]);
 
-  // Đường dẫn URL dẫn thẳng đến window.location.origin + window.location.pathname + '?mode=challenge'
+  // Tên trường hiển thị trên tiêu đề Header và đồng bộ trực tiếp vào Mã QR Code
+  const displaySchoolName =
+    settings.schoolName.trim().length > 0
+      ? settings.schoolName.trim()
+      : 'ĐẠI HỌC NÔNG LÂM TP.HCM';
+
+  // Đường dẫn URL của Mã QR Code tự động đồng bộ theo Tên Trường trên tiêu đề Header
   const challengeUrl = useMemo(() => {
     if (typeof window === 'undefined') return '';
-    return window.location.origin + window.location.pathname + '?mode=challenge';
-  }, []);
+    const params = new URLSearchParams();
+    params.set('mode', 'challenge');
+    params.set('school', displaySchoolName);
+    return `${window.location.origin}${window.location.pathname}?${params.toString()}`;
+  }, [displaySchoolName]);
 
-  // Tạo ảnh QR Code sắc nét kích thước lớn dẫn thẳng đến challengeUrl
+  // Tạo ảnh QR Code sắc nét kích thước lớn dẫn thẳng đến challengeUrl (tự động cập nhật khi đổi tên trường)
   useEffect(() => {
     if (!challengeUrl) return;
     QRCode.toDataURL(challengeUrl, {
@@ -309,6 +329,12 @@ export default function App() {
             setSettings((prev) => ({
               ...prev,
               ...sourceSettings,
+              // Nếu quét mã QR có chứa ?school=..., ưu tiên giữ tên trường từ Cloud hoặc từ mã QR thay vì bị ghi đè bởi mặc định cũ
+              schoolName:
+                latestCloudSettings?.schoolName?.trim() ||
+                urlSchoolParam ||
+                sourceSettings.schoolName ||
+                prev.schoolName,
               prizeItems:
                 Array.isArray(sourceSettings.prizeItems) &&
                 sourceSettings.prizeItems.length > 0
@@ -350,6 +376,7 @@ export default function App() {
         setSettings((prev) => ({
           ...prev,
           ...s,
+          schoolName: s.schoolName?.trim() || urlSchoolParam || prev.schoolName,
           prizeItems:
             Array.isArray(s.prizeItems) && s.prizeItems.length > 0
               ? s.prizeItems
@@ -401,7 +428,7 @@ export default function App() {
         window.setTimeout(() => setIsRefreshingList(false), 350);
       }
     }
-  }, []);
+  }, [urlSchoolParam]);
 
   // Kết nối Server API + Cloud Sync + BroadcastChannel + Storage Event để đồng bộ tức thì khi sinh viên nộp bài qua QR
   useEffect(() => {
@@ -425,6 +452,10 @@ export default function App() {
             setSettings((prev) => ({
               ...prev,
               ...parsed.state.settings,
+              schoolName:
+                urlSchoolParam ||
+                parsed.state.settings.schoolName ||
+                prev.schoolName,
               prizeItems:
                 Array.isArray(parsed.state.settings.prizeItems) &&
                 parsed.state.settings.prizeItems.length > 0
@@ -510,7 +541,7 @@ export default function App() {
       unsubscribeLocal();
       window.removeEventListener('storage', handleStorageChange);
     };
-  }, [handleRefreshSubmissions, applyIncomingSyncEvent]);
+  }, [handleRefreshSubmissions, applyIncomingSyncEvent, urlSchoolParam]);
 
   // Lưu dự phòng vào LocalStorage
   useEffect(() => {
@@ -1360,14 +1391,18 @@ export default function App() {
           setSubmissions((prev) => mergeSubmissionsList(prev, [newSub]));
           setSelectedSubmissionId(newSub.id);
         }}
+        onBackToWheel={() => {
+          const url = new URL(window.location.href);
+          url.searchParams.delete('mode');
+          url.searchParams.delete('school');
+          window.history.pushState({}, '', url.toString());
+          setIsChallengeView(false);
+          setActiveMainTab('wheel');
+          handleRefreshSubmissions(false);
+        }}
       />
     );
   }
-
-  const displaySchoolName =
-    settings.schoolName.trim().length > 0
-      ? settings.schoolName.trim()
-      : 'ĐẠI HỌC NÔNG LÂM TP.HCM';
 
   const currentEditingQuestion =
     settings.questions[activeQuestionTab] || DEFAULT_QUESTIONS[0];
