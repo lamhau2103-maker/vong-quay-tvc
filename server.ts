@@ -4,10 +4,12 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import {
   DEFAULT_SETTINGS,
+  DEFAULT_PRIZE_ITEMS,
   AppSettings,
   StudentSubmission,
   WinnerRecord,
-  QuizQuestion
+  QuizQuestion,
+  PrizeItem
 } from './src/types.ts';
 
 interface ServerState {
@@ -27,14 +29,20 @@ function loadPersistedState(): ServerState {
     if (fs.existsSync(DATA_FILE)) {
       const raw = fs.readFileSync(DATA_FILE, 'utf-8');
       const parsed = JSON.parse(raw);
+      const savedSettings = parsed.settings || {};
       return {
         settings: {
           ...DEFAULT_SETTINGS,
-          ...(parsed.settings || {}),
+          ...savedSettings,
+          prizeItems:
+            Array.isArray(savedSettings.prizeItems) &&
+            savedSettings.prizeItems.length > 0
+              ? savedSettings.prizeItems
+              : DEFAULT_PRIZE_ITEMS,
           questions:
-            Array.isArray(parsed.settings?.questions) &&
-            parsed.settings.questions.length === 10
-              ? parsed.settings.questions
+            Array.isArray(savedSettings.questions) &&
+            savedSettings.questions.length === 10
+              ? savedSettings.questions
               : DEFAULT_SETTINGS.questions
         },
         submissions: Array.isArray(parsed.submissions) ? parsed.submissions : [],
@@ -112,7 +120,7 @@ async function startServer() {
     });
   });
 
-  // Update Admin Settings (schoolName, prizes, 2 priority rules, 10 quiz questions)
+  // Update Admin Settings
   app.post('/api/settings', (req, res) => {
     const incoming = req.body;
     if (!incoming || typeof incoming !== 'object') {
@@ -123,6 +131,9 @@ async function startServer() {
     serverState.settings = {
       ...serverState.settings,
       ...incoming,
+      prizeItems: Array.isArray(incoming.prizeItems)
+        ? incoming.prizeItems
+        : serverState.settings.prizeItems,
       questions:
         Array.isArray(incoming.questions) && incoming.questions.length === 10
           ? incoming.questions
@@ -179,9 +190,10 @@ async function startServer() {
     res.json({ ok: true, submission });
   });
 
-  // Record spin completion & prize won
+  // Record spin completion, decrement won prize quantity by 1, and save winner
   app.post('/api/spin-complete', (req, res) => {
-    const { submissionId, winnerRecord } = req.body || {};
+    const { submissionId, prizeId, winnerRecord } = req.body || {};
+
     if (submissionId) {
       const sub = serverState.submissions.find(
         (s: StudentSubmission) => s.id === submissionId
@@ -190,6 +202,27 @@ async function startServer() {
         sub.hasSpun = true;
         sub.wonPrize = winnerRecord?.prize || '';
       }
+    }
+
+    // Giảm số lượng phần quà trúng thưởng đi 1
+    if (prizeId) {
+      serverState.settings.prizeItems = serverState.settings.prizeItems.map(
+        (item: PrizeItem) =>
+          item.id === prizeId
+            ? { ...item, quantity: Math.max(0, Number(item.quantity) - 1) }
+            : item
+      );
+    } else if (winnerRecord?.prize) {
+      let decremented = false;
+      serverState.settings.prizeItems = serverState.settings.prizeItems.map(
+        (item: PrizeItem) => {
+          if (!decremented && item.name === winnerRecord.prize && item.quantity > 0) {
+            decremented = true;
+            return { ...item, quantity: Math.max(0, Number(item.quantity) - 1) };
+          }
+          return item;
+        }
+      );
     }
 
     if (winnerRecord && winnerRecord.id) {
@@ -218,7 +251,9 @@ async function startServer() {
     res.json({ ok: true, state: serverState });
   });
 
-  const isProd = process.env.NODE_ENV === 'production' && fs.existsSync(path.join(__dirname, 'dist'));
+  const isProd =
+    process.env.NODE_ENV === 'production' &&
+    fs.existsSync(path.join(__dirname, 'dist'));
 
   if (!isProd) {
     const { createServer: createViteServer } = await import('vite');

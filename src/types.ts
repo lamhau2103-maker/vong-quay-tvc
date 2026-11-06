@@ -5,16 +5,22 @@ export interface QuizQuestion {
   correctIndex: number; // 0 = A, 1 = B, 2 = C, 3 = D (1 đúng, 3 sai)
 }
 
+export interface PrizeItem {
+  id: string;
+  name: string;
+  quantity: number;
+}
+
 export interface AppSettings {
   schoolName: string;
-  prizesText: string;
-  // Điều chỉnh 1: Phần quà dành cho tất cả các Khoa và đạt lớn hơn điểm 8
-  highScoreTargetPrize: string;
-  highScorePriorityRate: number;
-  // Điều chỉnh 2: Phần quà dành cho Khoa Chăn nuôi, Thú y
+  prizeItems: PrizeItem[];
+  // Điều chỉnh 1: Phần quà dành cho tất cả Khoa học điểm lớn hơn 7 (Điểm > 7)
+  allDeptOver7TargetPrize: string;
+  allDeptOver7Rate: number;
+  // Điều chỉnh 2: Phần quà dành cho Khoa Chăn nuôi, Thú y điểm lớn hơn 8 (Điểm > 8)
   vetDeptKeywords: string;
-  vetDeptTargetPrize: string;
-  vetDeptPriorityRate: number;
+  vetDeptOver8TargetPrize: string;
+  vetDeptOver8Rate: number;
   // Bộ 10 câu hỏi trắc nghiệm
   questions: QuizQuestion[];
 }
@@ -48,16 +54,16 @@ export interface WinnerRecord {
   appliedRule?: string;
 }
 
-export const DEFAULT_PRIZES = [
-  'Balo Laptop Thương Hiệu',
-  'Bình Giữ Nhiệt Inox Cao Cấp',
-  'Áo Mưa Cánh Dơi Kỷ Niệm',
-  'Sổ Tay Da & Bút Ký',
-  'Móc Khóa Gấu Bông Tuyển Dụng',
-  'Chuột Không Dây Văn Phòng',
-  'Voucher Trà Sữa 50.000đ',
-  'Quạt Cầm Tay Mini USB'
-].join('\n');
+export const DEFAULT_PRIZE_ITEMS: PrizeItem[] = [
+  { id: 'prize-1', name: 'Balo Laptop Thương Hiệu', quantity: 5 },
+  { id: 'prize-2', name: 'Bình Giữ Nhiệt Inox Cao Cấp', quantity: 8 },
+  { id: 'prize-3', name: 'Áo Mưa Cánh Dơi Kỷ Niệm', quantity: 15 },
+  { id: 'prize-4', name: 'Sổ Tay Da & Bút Ký', quantity: 20 },
+  { id: 'prize-5', name: 'Móc Khóa Gấu Bông Tuyển Dụng', quantity: 25 },
+  { id: 'prize-6', name: 'Chuột Không Dây Văn Phòng', quantity: 6 },
+  { id: 'prize-7', name: 'Voucher Trà Sữa 50.000đ', quantity: 12 },
+  { id: 'prize-8', name: 'Quạt Cầm Tay Mini USB', quantity: 10 }
+];
 
 export const DEFAULT_QUESTIONS: QuizQuestion[] = [
   {
@@ -174,11 +180,11 @@ export const DEFAULT_QUESTIONS: QuizQuestion[] = [
 
 export const DEFAULT_SETTINGS: AppSettings = {
   schoolName: 'Đại học Nông Lâm TP.HCM',
-  prizesText: DEFAULT_PRIZES,
-  highScoreTargetPrize: 'Balo Laptop Thương Hiệu',
-  highScorePriorityRate: 85,
+  prizeItems: DEFAULT_PRIZE_ITEMS,
+  allDeptOver7TargetPrize: 'Bình Giữ Nhiệt Inox Cao Cấp',
+  allDeptOver7Rate: 85,
   vetDeptKeywords: 'Chăn nuôi, Thú y',
-  vetDeptTargetPrize: 'Bình Giữ Nhiệt Inox Cao Cấp',
-  vetDeptPriorityRate: 75,
+  vetDeptOver8TargetPrize: 'Balo Laptop Thương Hiệu',
+  vetDeptOver8Rate: 90,
   questions: DEFAULT_QUESTIONS
 };
