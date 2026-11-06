@@ -19,7 +19,6 @@ import {
   RotateCcw,
   Sliders,
   QrCode,
-  ExternalLink,
   Copy,
   Check,
   HelpCircle,
@@ -188,11 +187,11 @@ export default function App() {
     return window.location.origin + window.location.pathname + '?mode=challenge';
   }, []);
 
-  // Tạo ảnh QR Code sắc nét dẫn thẳng đến challengeUrl
+  // Tạo ảnh QR Code sắc nét kích thước lớn dẫn thẳng đến challengeUrl
   useEffect(() => {
     if (!challengeUrl) return;
     QRCode.toDataURL(challengeUrl, {
-      width: 280,
+      width: 480,
       margin: 2,
       color: {
         dark: '#0F172A',
@@ -1089,15 +1088,6 @@ export default function App() {
     }).catch(() => {});
   };
 
-  const handleOpenChallengeUrl = () => {
-    if (typeof window !== 'undefined') {
-      const targetUrl =
-        window.location.origin + window.location.pathname + '?mode=challenge';
-      window.history.pushState({}, '', targetUrl);
-      setIsChallengeView(true);
-    }
-  };
-
   const handleCopyChallengeLink = async () => {
     if (!challengeUrl) return;
     try {
@@ -1140,9 +1130,9 @@ export default function App() {
         className="fixed inset-0 pointer-events-none z-50 w-full h-full"
       />
 
-      {/* 1. HEADER (PHÍA TRÊN CÙNG) + THANH 2 TAB CÔNG CỤ (VÒNG QUAY / ADMIN) */}
+      {/* 1. HEADER (PHÍA TRÊN CÙNG) */}
       <header className="sticky top-0 z-30 border-b border-slate-200 bg-white/95 backdrop-blur-md shadow-xs">
-        <div className="max-w-[1440px] mx-auto px-4 sm:px-6 py-3 flex flex-col xl:flex-row items-center justify-between gap-3">
+        <div className="max-w-[1440px] mx-auto px-4 sm:px-6 py-3.5 flex flex-col xl:flex-row items-center justify-between gap-3">
           {/* Brand Lockup: Logo Thai Viet Corporation */}
           <div className="flex items-center gap-3 shrink-0">
             <div className="h-12 w-12 rounded-xl bg-white shadow-xs p-1 flex items-center justify-center border border-slate-200 shrink-0 overflow-hidden">
@@ -1163,43 +1153,14 @@ export default function App() {
           </div>
 
           {/* Tiêu đề chính căn giữa, tự động cập nhật theo thời gian thực */}
-          <h1 className="font-display font-black text-lg sm:text-2xl lg:text-[23px] text-center tracking-tight leading-snug text-amber-600 max-w-3xl">
+          <h1 className="font-display font-black text-lg sm:text-2xl lg:text-[24px] text-center tracking-tight leading-snug text-amber-600 max-w-3xl">
             NGÀY HỘI VIỆC LÀM CÙNG TRƯỜNG {displaySchoolName}
           </h1>
-
-          {/* Thanh 2 Tab Công Cụ: Vòng quay và Admin */}
-          <div className="flex items-center gap-1.5 bg-slate-100 p-1.5 rounded-xl border border-slate-200 shrink-0">
-            <button
-              type="button"
-              onClick={() => setActiveMainTab('wheel')}
-              className={`inline-flex items-center gap-2 px-4 py-2 rounded-lg font-display font-bold text-xs sm:text-sm transition cursor-pointer ${
-                activeMainTab === 'wheel'
-                  ? 'bg-amber-500 text-white shadow-xs'
-                  : 'text-slate-600 hover:text-slate-900 hover:bg-white/60'
-              }`}
-            >
-              <Disc className="w-4 h-4" />
-              <span>Vòng quay</span>
-            </button>
-
-            <button
-              type="button"
-              onClick={() => setActiveMainTab('admin')}
-              className={`inline-flex items-center gap-2 px-4 py-2 rounded-lg font-display font-bold text-xs sm:text-sm transition cursor-pointer ${
-                activeMainTab === 'admin'
-                  ? 'bg-amber-500 text-white shadow-xs'
-                  : 'text-slate-600 hover:text-slate-900 hover:bg-white/60'
-              }`}
-            >
-              <Sliders className="w-4 h-4" />
-              <span>Admin</span>
-            </button>
-          </div>
         </div>
       </header>
 
       {/* 2. THÂN CHƯƠNG TRÌNH CHIA THEO 2 TAB CÔNG CỤ: VÒNG QUAY & ADMIN */}
-      <main className="flex-1 max-w-[1440px] w-full mx-auto px-4 sm:px-6 py-5 bg-white">
+      <main className="flex-1 max-w-[1440px] w-full mx-auto px-4 sm:px-6 py-5 pb-24 bg-white">
         {/* ================= TAB 1: VÒNG QUAY (CĂN TRÊN NGANG KHUNG HÌNH QR CODE) ================= */}
         <div className={activeMainTab === 'wheel' ? 'block' : 'hidden'}>
           <div className="flex flex-col lg:flex-row gap-6 items-start">
@@ -1418,9 +1379,9 @@ export default function App() {
                   </div>
                 </div>
 
-                {/* Khung hiển thị Mã QR Code */}
-                <div className="flex flex-col sm:flex-row items-center gap-5 p-4 rounded-2xl bg-slate-50 border border-slate-200">
-                  <div className="w-44 h-44 rounded-2xl bg-white p-2.5 shadow-sm shrink-0 flex items-center justify-center border-2 border-amber-400">
+                {/* Khung hiển thị Mã QR Code kích thước lớn */}
+                <div className="flex flex-col items-center justify-center gap-3.5 p-5 rounded-2xl bg-slate-50 border border-slate-200">
+                  <div className="w-64 h-64 sm:w-72 sm:h-72 rounded-2xl bg-white p-3 shadow-md shrink-0 flex items-center justify-center border-2 border-amber-400">
                     {qrDataUrl ? (
                       <img
                         src={qrDataUrl}
@@ -1432,49 +1393,28 @@ export default function App() {
                     )}
                   </div>
 
-                  <div className="flex-1 space-y-3 text-center sm:text-left">
-                    <div>
-                      <div className="text-xs font-bold uppercase tracking-wider text-amber-600">
-                        Quét QR Tham Gia Thử Thách
-                      </div>
-                      <p className="text-xs text-slate-600 mt-1 leading-relaxed">
-                        Khi sinh viên quét mã QR, điện thoại sẽ mở thẳng trang{' '}
-                        <strong>Thử Thách Nhận Quà</strong> để nhập thông tin và làm 10 câu trắc
-                        nghiệm.
-                      </p>
+                  <div className="flex flex-col items-center gap-2 text-center">
+                    <div className="text-xs sm:text-sm font-bold uppercase tracking-wider text-amber-600">
+                      Quét QR Tham Gia Thử Thách
                     </div>
 
-                    <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2">
-                      <a
-                        href={challengeUrl}
-                        onClick={(e) => {
-                          e.preventDefault();
-                          handleOpenChallengeUrl();
-                        }}
-                        className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-white font-display font-bold text-xs transition cursor-pointer shadow-xs whitespace-nowrap"
-                      >
-                        <ExternalLink className="w-3.5 h-3.5" />
-                        <span>Mở trang Thử Thách</span>
-                      </a>
-
-                      <button
-                        type="button"
-                        onClick={handleCopyChallengeLink}
-                        className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl border border-slate-300 bg-white hover:bg-slate-100 text-slate-700 text-xs font-semibold transition cursor-pointer whitespace-nowrap"
-                      >
-                        {copiedLink ? (
-                          <>
-                            <Check className="w-3.5 h-3.5 text-emerald-600" />
-                            <span className="text-emerald-600">Đã chép link</span>
-                          </>
-                        ) : (
-                          <>
-                            <Copy className="w-3.5 h-3.5 text-slate-500" />
-                            <span>Sao chép link</span>
-                          </>
-                        )}
-                      </button>
-                    </div>
+                    <button
+                      type="button"
+                      onClick={handleCopyChallengeLink}
+                      className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl border border-slate-300 bg-white hover:bg-slate-100 text-slate-700 text-xs font-semibold transition cursor-pointer whitespace-nowrap shadow-2xs"
+                    >
+                      {copiedLink ? (
+                        <>
+                          <Check className="w-3.5 h-3.5 text-emerald-600" />
+                          <span className="text-emerald-600">Đã chép link</span>
+                        </>
+                      ) : (
+                        <>
+                          <Copy className="w-3.5 h-3.5 text-slate-500" />
+                          <span>Sao chép link</span>
+                        </>
+                      )}
+                    </button>
                   </div>
                 </div>
 
@@ -2152,8 +2092,39 @@ export default function App() {
         </div>
       )}
 
+      {/* THANH 2 TAB CÔNG CỤ (VÒNG QUAY & ADMIN) Ở DƯỚI CUỐI MÀN HÌNH */}
+      <div className="fixed bottom-4 left-1/2 -translate-x-1/2 z-30">
+        <div className="flex items-center gap-1.5 bg-white/95 backdrop-blur-md p-1.5 rounded-2xl border border-slate-300 shadow-lg">
+          <button
+            type="button"
+            onClick={() => setActiveMainTab('wheel')}
+            className={`inline-flex items-center gap-2 px-5 py-2.5 rounded-xl font-display font-bold text-xs sm:text-sm transition cursor-pointer ${
+              activeMainTab === 'wheel'
+                ? 'bg-amber-500 text-white shadow-xs'
+                : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
+            }`}
+          >
+            <Disc className="w-4 h-4" />
+            <span>Vòng quay</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setActiveMainTab('admin')}
+            className={`inline-flex items-center gap-2 px-5 py-2.5 rounded-xl font-display font-bold text-xs sm:text-sm transition cursor-pointer ${
+              activeMainTab === 'admin'
+                ? 'bg-amber-500 text-white shadow-xs'
+                : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
+            }`}
+          >
+            <Sliders className="w-4 h-4" />
+            <span>Admin</span>
+          </button>
+        </div>
+      </div>
+
       {/* Nút bật/tắt âm thanh (chỉ hiển thị hình cái loa, không có chữ, nằm ở phía dưới cùng giao diện) */}
-      <div className="fixed bottom-5 right-5 z-30">
+      <div className="fixed bottom-4 right-5 z-30">
         <button
           type="button"
           onClick={() => setSoundEnabled((prev) => !prev)}
