@@ -202,6 +202,7 @@ export default function App() {
   const audioCtxRef = useRef<AudioContext | null>(null);
   const isAdminUnlockedRef = useRef<boolean>(false);
   const schoolSyncTimerRef = useRef<number | null>(null);
+  const clearedHistoryIdsRef = useRef<Set<string>>(new Set());
 
   useEffect(() => {
     isAdminUnlockedRef.current = isAdminUnlocked;
@@ -377,6 +378,8 @@ export default function App() {
           if (ev.winnerRecord?.id) {
             cloudWinners.push(ev.winnerRecord);
           }
+        } else if (ev.type === 'CLEAR_HISTORY') {
+          cloudWinners.length = 0;
         }
       }
 
@@ -420,9 +423,19 @@ export default function App() {
 
       setSubmissions((prev) => mergeSubmissionsList(prev, combinedIncoming));
 
-      if (serverHistory.length > 0 || cloudWinners.length > 0) {
+      const filteredServerHistory = serverHistory.filter(
+        (h) => !clearedHistoryIdsRef.current.has(h.id)
+      );
+      const filteredCloudWinners = cloudWinners.filter(
+        (h) => !clearedHistoryIdsRef.current.has(h.id)
+      );
+
+      if (filteredServerHistory.length > 0 || filteredCloudWinners.length > 0) {
         setHistory((prev) =>
-          mergeHistoryList(mergeHistoryList(prev, serverHistory), cloudWinners)
+          mergeHistoryList(
+            mergeHistoryList(prev, filteredServerHistory),
+            filteredCloudWinners
+          )
         );
       }
 
@@ -1380,11 +1393,22 @@ export default function App() {
   };
 
   const handleClearHistory = () => {
+    for (const item of history) {
+      if (item.id) {
+        clearedHistoryIdsRef.current.add(item.id);
+      }
+    }
     setHistory([]);
+    try {
+      localStorage.setItem(STORAGE_KEY_HISTORY, JSON.stringify([]));
+    } catch {}
     fetch('/api/clear-history', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ clearSubmissions: false })
+    }).catch(() => {});
+    publishCloudSyncEvent({
+      type: 'CLEAR_HISTORY'
     }).catch(() => {});
   };
 
