@@ -24,8 +24,9 @@ import {
   HelpCircle,
   Plus,
   Package,
-  FileText,
-  Disc
+  Disc,
+  RefreshCw,
+  Users
 } from 'lucide-react';
 import {
   AppSettings,
@@ -165,9 +166,9 @@ export default function App() {
   const [isAdminUnlocked, setIsAdminUnlocked] = useState(false);
   const [loginUsername, setLoginUsername] = useState('');
   const [loginPassword, setLoginPassword] = useState('');
-  const [loginError, setLoginError] = useState<string | null>(null);
   const [saveSuccessMessage, setSaveSuccessMessage] = useState<string | null>(null);
   const [activeQuestionTab, setActiveQuestionTab] = useState<number>(0);
+  const [isRefreshingList, setIsRefreshingList] = useState(false);
 
   // --- STATE VÒNG QUAY & HIỆU ỨNG ---
   const [soundEnabled, setSoundEnabled] = useState(true);
@@ -202,15 +203,14 @@ export default function App() {
       .catch(() => {});
   }, [challengeUrl]);
 
-  // Kết nối Server API & Server-Sent Events (SSE) để đồng bộ thời gian thực
-  useEffect(() => {
-    let isMounted = true;
-
-    fetch('/api/state')
-      .then((res) => (res.ok ? res.json() : null))
-      .then((data) => {
-        if (!isMounted || !data) return;
-        if (data.settings) {
+  // Hàm cập nhật danh sách sinh viên hoàn thành bài kiểm tra từ Server
+  const handleRefreshSubmissions = useCallback(async (showSpinner = true) => {
+    if (showSpinner) setIsRefreshingList(true);
+    try {
+      const res = await fetch('/api/state');
+      if (res.ok) {
+        const data = await res.json();
+        if (data?.settings) {
           setSettings((prev) => ({
             ...prev,
             ...data.settings,
@@ -226,14 +226,33 @@ export default function App() {
                 : prev.questions
           }));
         }
-        if (Array.isArray(data.submissions)) {
+        if (Array.isArray(data?.submissions)) {
           setSubmissions(data.submissions);
         }
-        if (Array.isArray(data.history)) {
+        if (Array.isArray(data?.history)) {
           setHistory(data.history);
         }
-      })
-      .catch(() => {});
+      }
+    } catch {
+      // Fallback
+    } finally {
+      if (showSpinner) {
+        window.setTimeout(() => setIsRefreshingList(false), 350);
+      }
+    }
+  }, []);
+
+  // Kết nối Server API, tự động cập nhật liên tục (Polling + SSE) để đồng bộ số người hoàn thành bài kiểm tra
+  useEffect(() => {
+    let isMounted = true;
+
+    handleRefreshSubmissions(false);
+
+    const pollInterval = window.setInterval(() => {
+      if (isMounted) {
+        handleRefreshSubmissions(false);
+      }
+    }, 3000);
 
     const eventSource = new EventSource('/api/stream');
     eventSource.onmessage = (event) => {
@@ -270,9 +289,10 @@ export default function App() {
 
     return () => {
       isMounted = false;
+      window.clearInterval(pollInterval);
       eventSource.close();
     };
-  }, []);
+  }, [handleRefreshSubmissions]);
 
   // Lưu dự phòng vào LocalStorage
   useEffect(() => {
@@ -950,10 +970,7 @@ export default function App() {
       loginPassword === 'admintvc'
     ) {
       setIsAdminUnlocked(true);
-      setLoginError(null);
       setLoginPassword('');
-    } else {
-      setLoginError('Sai tài khoản hoặc mật khẩu! (Tài khoản: Admin / Mật khẩu: admintvc)');
     }
   };
 
@@ -961,7 +978,6 @@ export default function App() {
     setIsAdminUnlocked(false);
     setLoginUsername('');
     setLoginPassword('');
-    setLoginError(null);
   };
 
   const handleSaveSettings = async () => {
@@ -1130,32 +1146,42 @@ export default function App() {
         className="fixed inset-0 pointer-events-none z-50 w-full h-full"
       />
 
-      {/* 1. HEADER (PHÍA TRÊN CÙNG) */}
-      <header className="sticky top-0 z-30 border-b border-slate-200 bg-white/95 backdrop-blur-md shadow-xs">
-        <div className="max-w-[1440px] mx-auto px-4 sm:px-6 py-3.5 flex flex-col xl:flex-row items-center justify-between gap-3">
-          {/* Brand Lockup: Logo Thai Viet Corporation */}
-          <div className="flex items-center gap-3 shrink-0">
-            <div className="h-12 w-12 rounded-xl bg-white shadow-xs p-1 flex items-center justify-center border border-slate-200 shrink-0 overflow-hidden">
-              <img
-                src="/assets/aistudio/9D442E44-DA18-4359-A1C0-B96CEA80BA07-removebg-preview_388b18da.png"
-                alt="Thai Viet Corporation"
-                className="h-full w-full object-contain"
-              />
+      {/* 1. HEADER (Ô MÀU NỀN DẠNG NỔI 3D KẾT HỢP TÊN CÔNG TY & NGÀY HỘI VIỆC LÀM NỔI BẬT, CHUYÊN NGHIỆP) */}
+      <header className="sticky top-0 z-30 bg-white/90 backdrop-blur-md pt-3 pb-2 px-4 sm:px-6">
+        <div className="max-w-[1440px] mx-auto">
+          <div className="relative rounded-2xl bg-gradient-to-b from-blue-600 via-blue-700 to-blue-900 border-t-2 border-blue-300/70 border-x border-blue-500/50 shadow-[0_7px_0_#172554,0_14px_28px_rgba(30,58,138,0.32),inset_0_2px_2px_rgba(255,255,255,0.35)] px-4 sm:px-7 py-3.5 flex flex-col xl:flex-row items-center justify-between gap-3.5 overflow-hidden">
+            {/* Hiệu ứng ánh sáng bóng 3D phía trên */}
+            <div className="absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-white/15 to-transparent pointer-events-none" />
+
+            {/* Khối Tên Công Ty & Logo nổi 3D */}
+            <div className="relative z-10 flex items-center gap-3.5 shrink-0">
+              <div className="h-13 w-13 rounded-2xl bg-white p-1.5 flex items-center justify-center border-2 border-blue-100 shadow-[0_4px_0_#cbd5e1,0_8px_16px_rgba(0,0,0,0.28)] shrink-0 overflow-hidden">
+                <img
+                  src="/assets/aistudio/9D442E44-DA18-4359-A1C0-B96CEA80BA07-removebg-preview_388b18da.png"
+                  alt="Thai Viet Corporation"
+                  className="h-full w-full object-contain"
+                />
+              </div>
+              <div className="text-left">
+                <div className="text-xs sm:text-sm lg:text-base font-black tracking-wider uppercase text-white font-display drop-shadow-[0_2px_0_rgba(15,23,42,0.75)]">
+                  CÔNG TY CỔ PHẦN THÁI VIỆT CORPORATION
+                </div>
+                <div className="inline-flex items-center mt-0.5 px-2.5 py-0.5 rounded-md bg-blue-950/60 border border-blue-400/40 text-[11px] text-sky-200 font-semibold shadow-inner">
+                  Bộ phận Tuyển dụng &amp; Kết nối Sinh viên
+                </div>
+              </div>
             </div>
-            <div className="text-left">
-              <div className="text-xs sm:text-sm font-black tracking-wide uppercase text-red-600 font-display">
-                CÔNG TY CỔ PHẦN THÁI VIỆT CORPORATION
-              </div>
-              <div className="text-[11px] text-slate-500 font-medium">
-                Bộ phận Tuyển dụng &amp; Kết nối Sinh viên
-              </div>
+
+            {/* Khối Tiêu đề Ngày Hội Việc Làm nổi 3D */}
+            <div className="relative z-10 px-4 py-2 rounded-xl bg-gradient-to-b from-blue-800/70 to-blue-950/80 border border-blue-400/40 shadow-[inset_0_1px_1px_rgba(255,255,255,0.2),0_3px_0_rgba(15,23,42,0.45)]">
+              <h1 className="font-display font-black text-base sm:text-xl lg:text-[22px] text-center tracking-tight leading-snug text-white drop-shadow-[0_2px_0_rgba(15,23,42,0.85)] max-w-3xl">
+                NGÀY HỘI VIỆC LÀM CÙNG TRƯỜNG{' '}
+                <span className="text-yellow-300 underline decoration-yellow-400/60 decoration-2 underline-offset-4">
+                  {displaySchoolName}
+                </span>
+              </h1>
             </div>
           </div>
-
-          {/* Tiêu đề chính căn giữa, màu chữ xanh dương, tự động cập nhật theo thời gian thực */}
-          <h1 className="font-display font-black text-lg sm:text-2xl lg:text-[24px] text-center tracking-tight leading-snug text-blue-700 max-w-3xl">
-            NGÀY HỘI VIỆC LÀM CÙNG TRƯỜNG {displaySchoolName}
-          </h1>
         </div>
       </header>
 
@@ -1250,26 +1276,38 @@ export default function App() {
                 </button>
               </div>
 
-              {/* NGAY PHÍA DƯỚI VÒNG QUAY: HIỂN THỊ THÔNG TIN BÀI NỘP VÀ SỐ ĐIỂM */}
+              {/* NGAY PHÍA DƯỚI VÒNG QUAY: DANH SÁCH SINH VIÊN THAM GIA THỬ THÁCH (KHÔNG HIỂN THỊ SỐ ĐIỂM) */}
               <div className="w-full mt-5 pt-4 border-t border-slate-200 space-y-3">
                 <div className="flex flex-wrap items-center justify-between gap-2">
                   <div className="flex items-center gap-2">
-                    <FileText className="w-4 h-4 text-blue-600" />
+                    <Users className="w-4 h-4 text-blue-600" />
                     <h3 className="font-display font-bold text-sm sm:text-base text-blue-900 uppercase tracking-wide">
-                      Thông Tin Bài Nộp &amp; Số Điểm
+                      Danh Sách Sinh Viên Tham Gia Thử Thách
                     </h3>
                   </div>
-                  <div className="flex items-center gap-3 text-xs font-mono tabular-nums text-slate-600">
-                    <span>
-                      Lượt đã quay: <strong className="text-blue-600">{history.length}</strong>
+
+                  <div className="flex flex-wrap items-center gap-2.5 text-xs">
+                    <span className="font-mono tabular-nums text-slate-600">
+                      Hoàn thành bài KT:{' '}
+                      <strong className="text-blue-700">{submissions.length}</strong>
                     </span>
-                    <span>·</span>
-                    <span>
-                      Ô quà còn lại:{' '}
-                      <strong className="text-emerald-600">
-                        {availablePrizes.length} ô ({totalRemainingQty} phần quà)
-                      </strong>
+                    <span className="text-slate-300">·</span>
+                    <span className="font-mono tabular-nums text-slate-600">
+                      Chờ quay:{' '}
+                      <strong className="text-emerald-600">{pendingSubmissions.length}</strong>
                     </span>
+
+                    <button
+                      type="button"
+                      onClick={() => handleRefreshSubmissions(true)}
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-display font-bold text-xs transition cursor-pointer shadow-xs active:scale-95"
+                      title="Cập nhật danh sách sinh viên mới nhất"
+                    >
+                      <RefreshCw
+                        className={`w-3.5 h-3.5 ${isRefreshingList ? 'animate-spin' : ''}`}
+                      />
+                      <span>Cập nhật danh sách</span>
+                    </button>
                   </div>
                 </div>
 
@@ -1314,49 +1352,74 @@ export default function App() {
                         Thời gian nộp bài: {activeSubmission.submittedAt}
                       </div>
                     </div>
-
-                    {/* Khung hiển thị Số Điểm nổi bật */}
-                    <div className="px-5 py-3 rounded-2xl bg-blue-50 border border-blue-300 text-center shrink-0 self-stretch sm:self-center flex flex-col items-center justify-center">
-                      <span className="text-[11px] font-bold uppercase tracking-wider text-blue-700">
-                        Điểm Trắc Nghiệm
-                      </span>
-                      <span className="font-display font-black text-2xl sm:text-3xl text-blue-600 tabular-nums mt-0.5">
-                        {activeSubmission.score} / {activeSubmission.totalQuestions}
-                      </span>
-                    </div>
                   </div>
                 ) : (
                   <div className="p-4 rounded-2xl bg-slate-50 border border-dashed border-slate-300 text-center text-xs sm:text-sm text-slate-500">
-                    Chưa có bài nộp nào. Sinh viên quét mã QR bên phải để điền thông tin &amp; hoàn thành 10 câu hỏi trắc nghiệm!
+                    Chưa có sinh viên nào trong danh sách. Sinh viên quét mã QR bên phải để điền thông tin &amp; tham gia thử thách!
                   </div>
                 )}
 
-                {/* Danh sách chọn nhanh các bài nộp đang chờ quay */}
-                {pendingSubmissions.length > 1 && (
-                  <div className="flex items-center gap-2 overflow-x-auto pb-1 pt-1">
-                    <span className="text-xs text-slate-500 shrink-0">
-                      Chờ quay ({pendingSubmissions.length}):
-                    </span>
-                    {pendingSubmissions.map((sub) => {
-                      const isSelected = sub.id === activeSubmission?.id;
-                      return (
-                        <button
-                          key={sub.id}
-                          type="button"
-                          onClick={() => {
-                            setSelectedSubmissionId(sub.id);
-                            setSpinWarning(null);
-                          }}
-                          className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition cursor-pointer shrink-0 border ${
-                            isSelected
-                              ? 'bg-blue-600 text-white border-blue-600 font-bold'
-                              : 'bg-white text-slate-700 border-slate-300 hover:bg-blue-50'
-                          }`}
-                        >
-                          {sub.name} ({sub.score}/10)
-                        </button>
-                      );
-                    })}
+                {/* Danh sách các sinh viên đã tham gia thử thách (không hiển thị số điểm) */}
+                {submissions.length > 0 && (
+                  <div className="space-y-1.5 pt-1">
+                    <div className="text-xs font-semibold text-blue-900">
+                      Danh sách sinh viên ({submissions.length} người tham gia - chọn sinh viên để quay):
+                    </div>
+                    <div className="max-h-44 overflow-y-auto rounded-xl border border-blue-100 bg-white divide-y divide-slate-100">
+                      {submissions.map((sub, idx) => {
+                        const isSelected = sub.id === activeSubmission?.id;
+                        return (
+                          <button
+                            key={sub.id}
+                            type="button"
+                            onClick={() => {
+                              setSelectedSubmissionId(sub.id);
+                              setSpinWarning(null);
+                            }}
+                            className={`w-full text-left px-3.5 py-2.5 flex flex-wrap items-center justify-between gap-2 text-xs transition cursor-pointer ${
+                              isSelected
+                                ? 'bg-blue-600 text-white font-semibold'
+                                : 'bg-white text-slate-700 hover:bg-blue-50/60'
+                            }`}
+                          >
+                            <div className="flex flex-wrap items-center gap-2 min-w-0">
+                              <span
+                                className={`inline-flex items-center justify-center w-5 h-5 rounded-md text-[11px] font-mono font-bold ${
+                                  isSelected
+                                    ? 'bg-white/20 text-white'
+                                    : 'bg-blue-50 text-blue-700'
+                                }`}
+                              >
+                                {submissions.length - idx}
+                              </span>
+                              <span className="font-bold truncate">{sub.name}</span>
+                              <span className={isSelected ? 'text-blue-100' : 'text-slate-400'}>·</span>
+                              <span className={`font-mono tabular-nums ${isSelected ? 'text-blue-100' : 'text-blue-700'}`}>
+                                {sub.phone}
+                              </span>
+                              <span className={isSelected ? 'text-blue-100' : 'text-slate-400'}>·</span>
+                              <span className={isSelected ? 'text-blue-100' : 'text-slate-600'}>
+                                {sub.department} ({sub.year})
+                              </span>
+                            </div>
+
+                            <span
+                              className={`text-[11px] font-semibold shrink-0 ${
+                                sub.hasSpun
+                                  ? isSelected
+                                    ? 'text-blue-100'
+                                    : 'text-slate-400'
+                                  : isSelected
+                                  ? 'text-yellow-200'
+                                  : 'text-emerald-600'
+                              }`}
+                            >
+                              {sub.hasSpun ? `Đã quay (${sub.wonPrize || 'Đã nhận'})` : '● Chờ quay'}
+                            </span>
+                          </button>
+                        );
+                      })}
+                    </div>
                   </div>
                 )}
               </div>
@@ -1967,9 +2030,9 @@ export default function App() {
               )}
             </div>
 
-            {/* LỚP PHỦ (OVERLAY) YÊU CẦU ĐĂNG NHẬP ADMIN KHI ĐANG KHÓA */}
+            {/* LỚP PHỦ (OVERLAY) YÊU CẦU ĐĂNG NHẬP ADMIN KHI ĐANG KHÓA - ĐƯỢC KÉO LÊN TRÊN CHO TIỆN QUAN SÁT */}
             {!isAdminUnlocked && (
-              <div className="absolute inset-0 z-20 bg-white/75 backdrop-blur-[2px] flex flex-col items-center justify-center p-5">
+              <div className="absolute inset-0 z-20 bg-white/75 backdrop-blur-[2px] flex flex-col items-center justify-start pt-8 sm:pt-12 p-5">
                 <div className="w-full max-w-sm bg-white border border-blue-200 rounded-2xl p-6 shadow-xl">
                   <div className="text-center mb-4">
                     <div className="w-12 h-12 rounded-2xl bg-blue-100 border border-blue-300 text-blue-700 flex items-center justify-center mx-auto mb-2.5">
@@ -1995,11 +2058,8 @@ export default function App() {
                         id="adminUserField"
                         type="text"
                         value={loginUsername}
-                        onChange={(e) => {
-                          setLoginUsername(e.target.value);
-                          if (loginError) setLoginError(null);
-                        }}
-                        placeholder="Nhập tài khoản (Admin)"
+                        onChange={(e) => setLoginUsername(e.target.value)}
+                        placeholder="Nhập tài khoản"
                         autoComplete="username"
                         className="w-full px-3.5 py-2.5 rounded-xl bg-white border border-slate-300 text-slate-900 text-xs sm:text-sm focus:outline-none focus:border-blue-600"
                       />
@@ -2016,21 +2076,12 @@ export default function App() {
                         id="adminPassField"
                         type="password"
                         value={loginPassword}
-                        onChange={(e) => {
-                          setLoginPassword(e.target.value);
-                          if (loginError) setLoginError(null);
-                        }}
+                        onChange={(e) => setLoginPassword(e.target.value)}
                         placeholder="Nhập mật khẩu"
                         autoComplete="current-password"
                         className="w-full px-3.5 py-2.5 rounded-xl bg-white border border-slate-300 text-slate-900 text-xs sm:text-sm focus:outline-none focus:border-blue-600"
                       />
                     </div>
-
-                    {loginError && (
-                      <div className="text-xs text-red-600 font-medium text-center">
-                        {loginError}
-                      </div>
-                    )}
 
                     <button
                       type="submit"
