@@ -38,6 +38,18 @@ import {
   DEFAULT_QUESTIONS
 } from './types';
 import ChallengePage from './ChallengePage';
+import {
+  STORAGE_KEY_SETTINGS,
+  STORAGE_KEY_SUBMISSIONS,
+  STORAGE_KEY_HISTORY,
+  publishCloudSyncEvent,
+  subscribeCloudSyncEvents,
+  subscribeLocalChannelEvents,
+  fetchCloudSyncHistory,
+  mergeSubmissionsList,
+  mergeHistoryList,
+  SyncEventPayload
+} from './syncService';
 
 interface ConfettiParticle {
   x: number;
@@ -50,10 +62,6 @@ interface ConfettiParticle {
   vRot: number;
   alpha: number;
 }
-
-const STORAGE_KEY_SETTINGS = 'CNKD_CAREER_FAIR_SETTINGS_V3';
-const STORAGE_KEY_SUBMISSIONS = 'CNKD_CAREER_FAIR_SUBMISSIONS_V3';
-const STORAGE_KEY_HISTORY = 'CNKD_CAREER_FAIR_HISTORY_V3';
 
 // Bảng màu rực rỡ phong cách Game Show "Chiếc Nón Kỳ Diệu"
 const WHEEL_PALETTE = [
@@ -203,13 +211,76 @@ export default function App() {
       .catch(() => {});
   }, [challengeUrl]);
 
-  // Hàm cập nhật danh sách sinh viên hoàn thành bài kiểm tra từ Server
+  // Áp dụng sự kiện đồng bộ nhận được từ điện thoại quét QR / các tab khác
+  const applyIncomingSyncEvent = useCallback((payload: SyncEventPayload) => {
+    if (!payload || typeof payload !== 'object') return;
+
+    if (payload.type === 'NEW_SUBMISSION' && payload.submission?.id) {
+      const incomingSub = payload.submission;
+      setSubmissions((prev) => mergeSubmissionsList(prev, [incomingSub]));
+
+      // Đồng bộ ngược lên backend nội bộ để lưu trữ lâu dài
+      fetch('/api/submissions', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(incomingSub)
+      }).catch(() => {});
+    } else if (payload.type === 'SPIN_COMPLETE') {
+      setSubmissions((prev) =>
+        prev.map((s) =>
+          s.id === payload.submissionId
+            ? { ...s, hasSpun: true, wonPrize: payload.winnerRecord?.prize }
+            : s
+        )
+      );
+      if (payload.winnerRecord?.id) {
+        setHistory((prev) => mergeHistoryList(prev, [payload.winnerRecord]));
+      }
+    } else if (payload.type === 'SETTINGS_UPDATED' && payload.settings) {
+      setSettings((prev) => ({
+        ...prev,
+        ...payload.settings,
+        prizeItems:
+          Array.isArray(payload.settings.prizeItems) &&
+          payload.settings.prizeItems.length > 0
+            ? payload.settings.prizeItems
+            : prev.prizeItems,
+        questions:
+          Array.isArray(payload.settings.questions) &&
+          payload.settings.questions.length === 10
+            ? payload.settings.questions
+            : prev.questions
+      }));
+    } else if (payload.type === 'CLEAR_HISTORY') {
+      setHistory([]);
+    }
+  }, []);
+
+  // Hàm cập nhật danh sách sinh viên hoàn thành bài kiểm tra từ cả Server, LocalStorage & Cloud Sync (điện thoại quét QR)
   const handleRefreshSubmissions = useCallback(async (showSpinner = true) => {
     if (showSpinner) setIsRefreshingList(true);
     try {
-      const res = await fetch('/api/state');
-      if (res.ok) {
-        const data = await res.json();
+      let localSubs: StudentSubmission[] = [];
+      try {
+        const rawLocal = localStorage.getItem(STORAGE_KEY_SUBMISSIONS);
+        if (rawLocal) {
+          const parsed = JSON.parse(rawLocal);
+          if (Array.isArray(parsed)) localSubs = parsed;
+        }
+      } catch {
+        // Ignore
+      }
+
+      const [serverRes, cloudEvents] = await Promise.all([
+        fetch('/api/state', { cache: 'no-store' }).catch(() => null),
+        fetchCloudSyncHistory().catch(() => [] as SyncEventPayload[])
+      ]);
+
+      let serverSubs: StudentSubmission[] = [];
+      let serverHistory: WinnerRecord[] = [];
+
+      if (serverRes && serverRes.ok) {
+        const data = await serverRes.json();
         if (data?.settings) {
           setSettings((prev) => ({
             ...prev,
@@ -227,10 +298,81 @@ export default function App() {
           }));
         }
         if (Array.isArray(data?.submissions)) {
-          setSubmissions(data.submissions);
+          serverSubs = data.submissions;
         }
         if (Array.isArray(data?.history)) {
-          setHistory(data.history);
+          serverHistory = data.history;
+        }
+      }
+
+      // Trích xuất các bài nộp và cấu hình mới nhất từ Cloud Sync
+      const cloudSubs: StudentSubmission[] = [];
+      const cloudSpunMap = new Map<string, string>();
+      const cloudWinners: WinnerRecord[] = [];
+      let latestCloudSettings: AppSettings | null = null;
+
+      for (const ev of cloudEvents) {
+        if (ev.type === 'NEW_SUBMISSION' && ev.submission?.id) {
+          cloudSubs.push(ev.submission);
+        } else if (ev.type === 'SPIN_COMPLETE') {
+          if (ev.submissionId) {
+            cloudSpunMap.set(ev.submissionId, ev.winnerRecord?.prize || '');
+          }
+          if (ev.winnerRecord?.id) {
+            cloudWinners.push(ev.winnerRecord);
+          }
+        } else if (ev.type === 'SETTINGS_UPDATED' && ev.settings) {
+          latestCloudSettings = ev.settings;
+        }
+      }
+
+      if (latestCloudSettings) {
+        const s = latestCloudSettings;
+        setSettings((prev) => ({
+          ...prev,
+          ...s,
+          prizeItems:
+            Array.isArray(s.prizeItems) && s.prizeItems.length > 0
+              ? s.prizeItems
+              : prev.prizeItems,
+          questions:
+            Array.isArray(s.questions) && s.questions.length === 10
+              ? s.questions
+              : prev.questions
+        }));
+      }
+
+      const combinedIncoming = mergeSubmissionsList(
+        mergeSubmissionsList(serverSubs, localSubs),
+        cloudSubs
+      ).map((sub) => {
+        if (cloudSpunMap.has(sub.id)) {
+          return {
+            ...sub,
+            hasSpun: true,
+            wonPrize: sub.wonPrize || cloudSpunMap.get(sub.id)
+          };
+        }
+        return sub;
+      });
+
+      setSubmissions((prev) => mergeSubmissionsList(prev, combinedIncoming));
+
+      if (serverHistory.length > 0 || cloudWinners.length > 0) {
+        setHistory((prev) =>
+          mergeHistoryList(mergeHistoryList(prev, serverHistory), cloudWinners)
+        );
+      }
+
+      // Nếu có bài nộp từ điện thoại sinh viên trên Cloud chưa có ở Server nội bộ, tự động đẩy về Server
+      const serverIds = new Set(serverSubs.map((s) => s.id));
+      for (const sub of combinedIncoming) {
+        if (!serverIds.has(sub.id)) {
+          fetch('/api/submissions', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(sub)
+          }).catch(() => {});
         }
       }
     } catch {
@@ -242,7 +384,7 @@ export default function App() {
     }
   }, []);
 
-  // Kết nối Server API, tự động cập nhật liên tục (Polling + SSE) để đồng bộ số người hoàn thành bài kiểm tra
+  // Kết nối Server API + Cloud Sync + BroadcastChannel + Storage Event để đồng bộ tức thì khi sinh viên nộp bài qua QR
   useEffect(() => {
     let isMounted = true;
 
@@ -254,6 +396,7 @@ export default function App() {
       }
     }, 3000);
 
+    // 1. SSE từ backend nội bộ
     const eventSource = new EventSource('/api/stream');
     eventSource.onmessage = (event) => {
       try {
@@ -276,10 +419,14 @@ export default function App() {
             }));
           }
           if (Array.isArray(parsed.state.submissions)) {
-            setSubmissions(parsed.state.submissions);
+            setSubmissions((prev) =>
+              mergeSubmissionsList(prev, parsed.state.submissions)
+            );
           }
           if (Array.isArray(parsed.state.history)) {
-            setHistory(parsed.state.history);
+            setHistory((prev) =>
+              mergeHistoryList(prev, parsed.state.history)
+            );
           }
         }
       } catch {
@@ -287,12 +434,44 @@ export default function App() {
       }
     };
 
+    // 2. Cloud Sync SSE (nhận bài nộp từ điện thoại sinh viên quét QR theo thời gian thực)
+    const unsubscribeCloud = subscribeCloudSyncEvents((payload) => {
+      if (isMounted) {
+        applyIncomingSyncEvent(payload);
+      }
+    });
+
+    // 3. BroadcastChannel nội bộ giữa các tab trên cùng trình duyệt
+    const unsubscribeLocal = subscribeLocalChannelEvents((payload) => {
+      if (isMounted) {
+        applyIncomingSyncEvent(payload);
+      }
+    });
+
+    // 4. Lắng nghe sự kiện thay đổi localStorage giữa các tab
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === STORAGE_KEY_SUBMISSIONS && e.newValue) {
+        try {
+          const parsed = JSON.parse(e.newValue);
+          if (Array.isArray(parsed)) {
+            setSubmissions((prev) => mergeSubmissionsList(prev, parsed));
+          }
+        } catch {
+          // Ignore
+        }
+      }
+    };
+    window.addEventListener('storage', handleStorageChange);
+
     return () => {
       isMounted = false;
       window.clearInterval(pollInterval);
       eventSource.close();
+      unsubscribeCloud();
+      unsubscribeLocal();
+      window.removeEventListener('storage', handleStorageChange);
     };
-  }, [handleRefreshSubmissions]);
+  }, [handleRefreshSubmissions, applyIncomingSyncEvent]);
 
   // Lưu dự phòng vào LocalStorage
   useEffect(() => {
@@ -909,6 +1088,13 @@ export default function App() {
             winnerRecord: newRecord
           })
         }).catch(() => {});
+
+        publishCloudSyncEvent({
+          type: 'SPIN_COMPLETE',
+          submissionId: spinningStudent.id,
+          prizeId: wonPrizeItem.id,
+          winnerRecord: newRecord
+        }).catch(() => {});
       }
     };
 
@@ -983,11 +1169,17 @@ export default function App() {
   const handleSaveSettings = async () => {
     try {
       localStorage.setItem(STORAGE_KEY_SETTINGS, JSON.stringify(settings));
-      await fetch('/api/settings', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(settings)
-      }).catch(() => {});
+      await Promise.all([
+        fetch('/api/settings', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(settings)
+        }).catch(() => {}),
+        publishCloudSyncEvent({
+          type: 'SETTINGS_UPDATED',
+          settings
+        }).catch(() => {})
+      ]);
       setSaveSuccessMessage('Đã lưu toàn bộ cài đặt, số lượng quà & 10 câu hỏi thành công!');
       window.setTimeout(() => {
         setSaveSuccessMessage(null);
@@ -1000,11 +1192,17 @@ export default function App() {
   const handleResetDefaultSettings = async () => {
     setSettings(DEFAULT_SETTINGS);
     localStorage.setItem(STORAGE_KEY_SETTINGS, JSON.stringify(DEFAULT_SETTINGS));
-    await fetch('/api/settings', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(DEFAULT_SETTINGS)
-    }).catch(() => {});
+    await Promise.all([
+      fetch('/api/settings', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(DEFAULT_SETTINGS)
+      }).catch(() => {}),
+      publishCloudSyncEvent({
+        type: 'SETTINGS_UPDATED',
+        settings: DEFAULT_SETTINGS
+      }).catch(() => {})
+    ]);
     setSaveSuccessMessage('Đã khôi phục danh sách quà và 10 câu hỏi mẫu mặc định!');
     window.setTimeout(() => {
       setSaveSuccessMessage(null);
@@ -1120,11 +1318,16 @@ export default function App() {
       <ChallengePage
         settings={settings}
         onSubmitSuccess={(newSub) => {
-          setSubmissions((prev) => {
-            const exists = prev.some((s) => s.id === newSub.id);
-            return exists ? prev : [newSub, ...prev];
-          });
+          setSubmissions((prev) => mergeSubmissionsList(prev, [newSub]));
           setSelectedSubmissionId(newSub.id);
+        }}
+        onBackToWheel={() => {
+          const url = new URL(window.location.href);
+          url.searchParams.delete('mode');
+          window.history.pushState({}, '', url.toString());
+          setIsChallengeView(false);
+          setActiveMainTab('wheel');
+          handleRefreshSubmissions(false);
         }}
       />
     );

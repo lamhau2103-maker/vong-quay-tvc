@@ -8,6 +8,11 @@ import {
   BookOpen
 } from 'lucide-react';
 import { AppSettings, StudentSubmission, DEFAULT_QUESTIONS } from './types';
+import {
+  STORAGE_KEY_SUBMISSIONS,
+  publishCloudSyncEvent,
+  mergeSubmissionsList
+} from './syncService';
 
 interface ChallengePageProps {
   settings: AppSettings;
@@ -131,7 +136,7 @@ export default function ChallengePage({
     const orderedAnswers = questions.map((_, idx) => answers[idx]);
     let calculatedScore = 0;
     questions.forEach((q, idx) => {
-      if (orderedAnswers[idx] === q.correctIndex) {
+      if (Number(orderedAnswers[idx]) === Number(q.correctIndex)) {
         calculatedScore += 1;
       }
     });
@@ -143,7 +148,7 @@ export default function ChallengePage({
       second: '2-digit'
     })} - ${now.toLocaleDateString('vi-VN')}`;
 
-    const fallbackSubmission: StudentSubmission = {
+    const newSubmission: StudentSubmission = {
       id: `${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
       name: trimmedName,
       phone: cleanedPhone,
@@ -157,33 +162,43 @@ export default function ChallengePage({
       hasSpun: false
     };
 
+    // 1. Lưu ngay vào LocalStorage để đồng bộ tức thì nếu cùng thiết bị
     try {
-      const response = await fetch('/api/submissions', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          name: trimmedName,
-          phone: cleanedPhone,
-          school: trimmedSchool,
-          department: trimmedDept,
-          year: trimmedYear,
-          answers: orderedAnswers
-        })
-      });
+      const existingRaw = localStorage.getItem(STORAGE_KEY_SUBMISSIONS);
+      const existingList: StudentSubmission[] = existingRaw ? JSON.parse(existingRaw) : [];
+      const merged = mergeSubmissionsList([newSubmission], existingList);
+      localStorage.setItem(STORAGE_KEY_SUBMISSIONS, JSON.stringify(merged));
+    } catch {
+      // Ignore storage error
+    }
 
-      if (response.ok) {
-        const data = await response.json();
-        const finalSub: StudentSubmission = data.submission || fallbackSubmission;
-        setSubmittedResult(finalSub);
-        onSubmitSuccess(finalSub);
-      } else {
-        setSubmittedResult(fallbackSubmission);
-        onSubmitSuccess(fallbackSubmission);
+    // 2. Gửi đồng thời lên Server API và Cloud Real-Time Relay để trang Vòng Quay nhận ngay lập tức
+    let finalSub: StudentSubmission = newSubmission;
+
+    try {
+      const [apiRes] = await Promise.allSettled([
+        fetch('/api/submissions', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(newSubmission)
+        }),
+        publishCloudSyncEvent({
+          type: 'NEW_SUBMISSION',
+          submission: newSubmission
+        })
+      ]);
+
+      if (apiRes.status === 'fulfilled' && apiRes.value.ok) {
+        const data = await apiRes.value.json();
+        if (data?.submission) {
+          finalSub = data.submission;
+        }
       }
     } catch {
-      setSubmittedResult(fallbackSubmission);
-      onSubmitSuccess(fallbackSubmission);
+      // Fallback
     } finally {
+      setSubmittedResult(finalSub);
+      onSubmitSuccess(finalSub);
       setIsSubmitting(false);
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
@@ -223,7 +238,7 @@ export default function ChallengePage({
 
             <div>
               <div className="text-xs font-bold uppercase tracking-widest text-blue-600">
-                ✓ Đã nộp bài &amp; chấm điểm thành công
+                ✓ Đã nộp bài &amp; chuyển thông tin sang Vòng Quay thành công
               </div>
               <h2 className="font-display font-black text-2xl sm:text-3xl text-slate-900 mt-1">
                 {submittedResult.name}
@@ -254,9 +269,10 @@ export default function ChallengePage({
             </div>
 
             <div className="p-4 rounded-2xl bg-blue-50 border border-blue-200 text-blue-900 text-xs sm:text-sm leading-relaxed">
-              Thông tin và điểm số của bạn đã được chuyển tới{' '}
-              <strong>Vòng Quay Chiếc Nón Kỳ Diệu</strong> tại gian hàng. Hãy đến khu vực vòng
-              quay để bấm <strong>QUAY NGAY</strong> nhận quà!
+              Thông tin của bạn đã được chuyển trực tiếp tới{' '}
+              <strong>Danh Sách Sinh Viên Tham Gia Thử Thách</strong> trên màn hình{' '}
+              <strong>Vòng Quay Chiếc Nón Kỳ Diệu</strong>. Hãy đến khu vực vòng quay để bấm{' '}
+              <strong>QUAY NGAY</strong> nhận quà!
             </div>
 
             {onBackToWheel && (
@@ -266,7 +282,7 @@ export default function ChallengePage({
                   onClick={onBackToWheel}
                   className="w-full py-3.5 px-5 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-display font-extrabold text-sm transition cursor-pointer shadow-md"
                 >
-                  Đến Vòng Quay Nhận Quà Ngay
+                  Chuyển Đến Trang Vòng Quay Ngay
                 </button>
               </div>
             )}
@@ -452,7 +468,7 @@ export default function ChallengePage({
                 className="w-full py-4 px-6 rounded-2xl bg-gradient-to-r from-blue-600 via-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-display font-black text-base shadow-lg shadow-blue-600/20 flex items-center justify-center gap-2 transition cursor-pointer"
               >
                 <Send className="w-5 h-5" />
-                <span>{isSubmitting ? 'ĐANG CHẤM ĐIỂM...' : 'NỘP BÀI & CHẤM ĐIỂM'}</span>
+                <span>{isSubmitting ? 'ĐANG CHẤM ĐIỂM & GỬI DỮ LIỆU...' : 'NỘP BÀI & CHẤM ĐIỂM'}</span>
               </button>
             </section>
           </form>

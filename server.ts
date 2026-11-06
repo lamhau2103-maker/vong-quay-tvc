@@ -89,6 +89,25 @@ function broadcastState() {
 
 async function startServer() {
   const app = express();
+
+  // Enable CORS and disable caching on all API routes
+  app.use('/api', (req, res, next) => {
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+    res.setHeader(
+      'Cache-Control',
+      'no-store, no-cache, must-revalidate, proxy-revalidate'
+    );
+    res.setHeader('Pragma', 'no-cache');
+    res.setHeader('Expires', '0');
+    if (req.method === 'OPTIONS') {
+      res.status(204).end();
+      return;
+    }
+    next();
+  });
+
   app.use(express.json({ limit: '2mb' }));
 
   // SSE endpoint for real-time sync between student phones and main wheel screen
@@ -147,39 +166,68 @@ async function startServer() {
 
   // Student submits "Thử Thách Nhận Quà" from mobile QR scan
   app.post('/api/submissions', (req, res) => {
-    const { name, phone, school, department, year, answers } = req.body || {};
+    const {
+      id,
+      name,
+      phone,
+      school,
+      department,
+      year,
+      answers,
+      score: clientScore,
+      submittedAt: clientSubmittedAt
+    } = req.body || {};
+
     if (!name || !phone || !school || !department || !year || !Array.isArray(answers)) {
       res.status(400).json({ error: 'Vui lòng điền đầy đủ thông tin và trả lời 10 câu hỏi' });
       return;
     }
 
+    // If submission with this ID already exists, return it without duplicating
+    if (id) {
+      const existing = serverState.submissions.find(
+        (s: StudentSubmission) => s.id === String(id)
+      );
+      if (existing) {
+        res.json({ ok: true, submission: existing });
+        return;
+      }
+    }
+
     const questions: QuizQuestion[] =
       serverState.settings.questions || DEFAULT_SETTINGS.questions;
-    let score = 0;
+    let computedScore = 0;
     questions.forEach((q: QuizQuestion, idx: number) => {
       if (Number(answers[idx]) === Number(q.correctIndex)) {
-        score += 1;
+        computedScore += 1;
       }
     });
 
+    const finalScore =
+      typeof clientScore === 'number' && !Number.isNaN(clientScore)
+        ? clientScore
+        : computedScore;
+
     const now = new Date();
-    const formattedTime = `${now.toLocaleTimeString('vi-VN', {
-      hour: '2-digit',
-      minute: '2-digit',
-      second: '2-digit'
-    })} - ${now.toLocaleDateString('vi-VN')}`;
+    const formattedTime =
+      clientSubmittedAt ||
+      `${now.toLocaleTimeString('vi-VN', {
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit'
+      })} - ${now.toLocaleDateString('vi-VN')}`;
 
     const submission: StudentSubmission = {
-      id: `${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+      id: id ? String(id) : `${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
       name: String(name).trim(),
       phone: String(phone).trim(),
       school: String(school).trim(),
       department: String(department).trim(),
       year: String(year).trim(),
       answers: answers.map(Number),
-      score,
+      score: finalScore,
       totalQuestions: questions.length,
-      submittedAt: formattedTime,
+      submittedAt: String(formattedTime),
       hasSpun: false
     };
 
