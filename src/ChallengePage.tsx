@@ -457,6 +457,10 @@ export default function ChallengePage({
           </form>
         )}
       </main>
+
+      <div className="fixed bottom-2.5 left-4 z-30 text-[11px] font-medium text-slate-400 pointer-events-none select-none">
+        by Phuc Hau HR
+      </div>
     </div>
   );
 }

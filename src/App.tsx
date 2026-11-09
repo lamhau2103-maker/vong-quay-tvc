@@ -2498,6 +2498,11 @@ export default function App() {
         </div>
       </div>
 
+      {/* Dòng chữ nhỏ người dựng web ở góc dưới cùng giao diện */}
+      <div className="fixed bottom-2.5 left-4 z-30 text-[11px] font-medium text-slate-400 pointer-events-none select-none">
+        by Phuc Hau HR
+      </div>
+
       {/* Nút bật/tắt âm thanh (chỉ hiển thị hình cái loa, không có chữ, nằm ở phía dưới cùng giao diện) */}
       <div className="fixed bottom-4 right-5 z-30">
         <button
